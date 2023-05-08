@@ -68,11 +68,16 @@ class Player(pygame.sprite.Sprite):
         # 객체 충돌 기준 설정
         self.rect = self.image.get_rect()
         self.rect.center = self.center
-    
+
+        # 이미지 회전용 이미지 생성
+        self.image1 = self.image
+        self.image2 = pygame.transform.rotate(self.image, 180).convert_alpha() 
+
     # 이미지 회전
-    def rotate(self, angle):
-        # 이미지 회전, 회전한 이미지를 self.image에 오버라이드함.
-        self.image = pygame.transform.rotate(self.image, self.angle).convert_alpha() 
+    def rotate1(self):
+        self.image = self.image1
+    def rotate2(self):
+        self.image = self.image2
 
     # 이미지 그리기
     def draw(self):
@@ -226,7 +231,14 @@ while not done:
         player.move_down()
     if keys[pygame.K_w] or keys[pygame.K_UP]:
         player.move_up()
-        
+
+    #플레이어 회전 처리
+    mouseX, mouseY = pygame.mouse.get_pos()
+    if(mouseX < player.x + 20):
+        player.rotate1()
+    else:
+        player.rotate2()
+
     # 종합 좀비 이벤트 처리
     for i in range(zombie_amount):
         # 좀비 이동 처리. 플레이어와 좀비의 좌표를 비교해 좀비가 플레이어를 따라가도록 함.
