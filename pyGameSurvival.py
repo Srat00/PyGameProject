@@ -2,11 +2,22 @@
 # Description: PyGame을 이용한 간단한 피하기 게임
 # Author: Rocky Eo
 # Since: 2023-04-28
-# Version: 1.0.0
+
+# Version: 1.0.1_1
+# Log:
+# 2023-04-28: Ver 1.0.0
+# - Created [어록희]
+# 2023-05-03: ver 1.0.1
+# - Added Obstacle [강희수]
+# 2023-05-08: ver 1.0.1_1
+# - Added Bullet [어록희] 
+# Comment : 좀 비효율적인 방법입니다. 일단은 작동은 되니 추후에 수정해보겠습니다. [어록희]
 # ================================================
 
 import pygame
 import random
+import math
+import time
 
 from tkinter import *
 from tkinter import messagebox
@@ -107,7 +118,7 @@ class Player(pygame.sprite.Sprite):
         
         
 # 적 개체
-class Zombie:
+class Enemy:
     # 초기 설정
     def __init__(self):
         # 좌표, 각도, 속도 설정. 스폰은 랜덤으로 한다.
@@ -117,7 +128,7 @@ class Zombie:
         self.speed = 2
         
         # 이미지 설정. 세부 사항은 주인공 객체와 동일함.
-        self.image = pygame.image.load("image/zombie.png").convert_alpha()
+        self.image = pygame.image.load("image/enemy.png").convert_alpha()
         self.center = (self.x + self.image.get_width() // 2, self.y + self.image.get_height() // 2)
         
         # 객체 충돌 기준 설정
@@ -151,14 +162,49 @@ class Zombie:
         # 랜덤 좌표 이동시 충돌 기준이 따라가지 않으므로, 충돌 기준을 보정해줌.
         self.rect.center = (x + self.image.get_width() // 2, y + self.image.get_height() // 2)
 
-    # 좀비 개체 충돌 이벤트 처리
+    # 적군 개체 충돌 이벤트 처리
     def collision(self):
         # 충돌시 랜덤 좌표로 이동.
         self.x = random.randrange(SCREEN_WIDTH)
         self.y = random.randrange(SCREEN_HEIGHT)
         # 충돌 기준 보정.
         self.set_rect_center(self.x, self.y)
+        
+# 장애물 클래스 정의
+class Obstacle(pygame.sprite.Sprite):
+    def __init__(self, group):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((50, 50))
+        self.image.fill((255, 0, 0))
+        self.rect = self.image.get_rect()
 
+        # 장애물이 다른 장애물과 겹치지 않도록 생성
+        while pygame.sprite.spritecollide(self, group, False):
+            self.rect.x = random.randrange(0, SCREEN_WIDTH - self.rect.width)
+            self.rect.y = random.randrange(0, SCREEN_HEIGHT - self.rect.height)
+
+    def update(self):
+        pass
+
+# 총알 개체
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, angle):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.Surface((10, 10))
+        self.image.fill((205, 205, 30))  # 총알 색상 설정
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.speed = 20
+        self.dx = math.cos(angle) * self.speed
+        self.dy = -math.sin(angle) * self.speed
+
+    def update(self):
+        self.rect.x += self.dx
+        self.rect.y += self.dy
+
+        if self.rect.left > SCREEN_WIDTH or self.rect.right < 0 or self.rect.top > SCREEN_HEIGHT or self.rect.bottom < 0:
+            self.kill()
+            
 # 점수 개체
 class Score:
     # 초기 설정
@@ -190,8 +236,10 @@ class Score:
 # ================================================================================================  
 
 # 환경 변수 설정
-zombie_amount = 10 # 인 게임에서 변경 가능
-zombie_list = []
+enemy_amount = 10 # 인 게임에서 변경 가능
+enemy_list = []
+last_shot_time = pygame.time.get_ticks()
+fire_delay = 350
 
 # 게임 루프
 done = False
@@ -202,11 +250,14 @@ clock = pygame.time.Clock()
 # 플레이어 생성
 player = Player()
 # 적 생성
-for i in range(zombie_amount):
-    zombie_list.append(Zombie())
+for i in range(enemy_amount):
+    enemy_list.append(Enemy())
 # 점수 생성
 score = Score()
 score.setScore(100)
+# 장애물 그룹 생성
+obstacle_group = pygame.sprite.Group()
+bullet_group = pygame.sprite.Group()
 
 # ================================================================================================  
 
@@ -256,13 +307,35 @@ while not done:
             # 충돌시 이벤트 처리
             zombie_list[i].collision()
             score.setScore(-5)
+=======
+    # 종합 적군 이벤트 처리
+    for i in range(enemy_amount):
+        # 적군 이동 처리. 플레이어와 적군의 좌표를 비교해 적군가 플레이어를 따라가도록 함.
+        if player.x > enemy_list[i].x:
+            enemy_list[i].move_right()
+        if player.x < enemy_list[i].x:
+            enemy_list[i].move_left()
+        if player.y > enemy_list[i].y:   
+            enemy_list[i].move_down()
+        if player.y < enemy_list[i].y:
+            enemy_list[i].move_up()
+            
+        # 주인공 충돌 처리
+        if enemy_list[i].rect.colliderect(player.rect):
+            # 충돌시 이벤트 처리
+            enemy_list[i].collision()
+            score.setScore(-5)
+        # 총알 충돌 처리
+        for k in range(len(bullet_group)):
+            if bullet_group.sprites()[k].rect.colliderect(enemy_list[i].rect):
+                enemy_list[i].collision()
+                bullet_group.sprites()[k].kill()
             
     # 장애물 개수가 8개 이하일 때만 새로운 장애물 생성
     if len(obstacle_group) < 8:
         obstacle = Obstacle(obstacle_group)
         obstacle_group.add(obstacle)
-        
-    
+
     if pygame.sprite.spritecollide(player,obstacle_group, False):
             if keys[pygame.K_a] or keys[pygame.K_LEFT]:
                 player.move_right()
@@ -272,9 +345,17 @@ while not done:
                 player.move_up()
             if keys[pygame.K_w] or keys[pygame.K_UP]:
                 player.move_down()
-    
-    # 모든 장애물 업데이트
-    obstacle_group.update()
+
+    # 총알 이벤트 처리
+    if pygame.mouse.get_pressed()[0]:
+        current_time = pygame.time.get_ticks()
+        if current_time - last_shot_time >= fire_delay:
+            mx, my = pygame.mouse.get_pos()
+            px, py = player.rect.center
+            angle = math.atan2(my - py, mx - px)
+            bullet = Bullet(px, py, -angle)
+            bullet_group.add(bullet)
+            last_shot_time = current_time
 
     # 게임 종료 조건 처리
     if score.score <= 0:
@@ -283,17 +364,19 @@ while not done:
         messagebox.showinfo("PyGameTest", "GAME OVER! ")
         done = True
 
-    # 업데이트
+    # 그리기
     screen.fill(WHITE)
     obstacle_group.draw(screen)
-    
-    
-    # 객체 그리기
+    bullet_group.draw(screen)
     player.draw()
-    for i in range(zombie_amount):
-        zombie_list[i].draw()
+    for i in range(enemy_amount):
+        enemy_list[i].draw()
     score.draw()
-   
+
+    # 업데이트
+    obstacle_group.update()
+    bullet_group.update()
+
     pygame.display.flip()
 
 # Pygame 종료
