@@ -290,24 +290,6 @@ while not done:
     else:
         player.rotate2()
 
-    # 종합 좀비 이벤트 처리
-    for i in range(zombie_amount):
-        # 좀비 이동 처리. 플레이어와 좀비의 좌표를 비교해 좀비가 플레이어를 따라가도록 함.
-        if player.x > zombie_list[i].x:
-            zombie_list[i].move_right()
-        if player.x < zombie_list[i].x:
-            zombie_list[i].move_left()
-        if player.y > zombie_list[i].y:   
-            zombie_list[i].move_down()
-        if player.y < zombie_list[i].y:
-            zombie_list[i].move_up()
-            
-        # 좀비 충돌 처리
-        if zombie_list[i].rect.colliderect(player.rect):
-            # 충돌시 이벤트 처리
-            zombie_list[i].collision()
-            score.setScore(-5)
-=======
     # 종합 적군 이벤트 처리
     for i in range(enemy_amount):
         # 적군 이동 처리. 플레이어와 적군의 좌표를 비교해 적군가 플레이어를 따라가도록 함.
