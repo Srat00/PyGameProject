@@ -1,288 +1,342 @@
+# Version: 1.1.0
+# Log:
+# 2023-04-28: Ver 1.0.0
+# - Created [어록희]
+# 2023-05-03: ver 1.0.1
+# - Added Obstacle [강희수]
+# 2023-05-08: ver 1.0.1_1
+# - Added Bullet [어록희] 
+# 2023-05-08: ver 1.1.0
+# - Code Refactored
+# - Added Camera
+# - Reinforced Obstacle
 # ================================================
-# Description: PyGame을 이용한 간단한 피하기 게임
-# Author: Rocky Eo
-# Since: 2023-04-28
-# Version: 1.0.0
-# ================================================
 
-import pygame
-import random
+#====================================================================================================
+# 라이브러리 임포트
+#====================================================================================================
+import pygame, sys
+from random import randint
 
-from tkinter import *
-from tkinter import messagebox
+#====================================================================================================
+#상수 정의
+#====================================================================================================
 
-# Pygame 초기화
-pygame.init()
-
-#font
-game_font = pygame.font.Font(None, 40)
-
-# 게임 화면 설정
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+ROOM_WIDTH = 2500
+ROOM_HEIGHT = 2500
 
-# 게임 타이틀 설정
-pygame.display.set_caption("Survival Game")
-
-# 색상 정의
 BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
 
-# 장애물 클래스 정의
-class Obstacle(pygame.sprite.Sprite):
-    def __init__(self, group):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((50, 50))
-        self.image.fill((255, 0, 0))
-        self.rect = self.image.get_rect()
-
-        # 장애물이 다른 장애물과 겹치지 않도록 생성
-        while pygame.sprite.spritecollide(self, group, False):
-            self.rect.x = random.randrange(0, SCREEN_WIDTH - self.rect.width)
-            self.rect.y = random.randrange(0, SCREEN_HEIGHT - self.rect.height)
-
-    def update(self):
-        pass
-
-# 장애물 그룹 생성
-obstacle_group = pygame.sprite.Group()
-
+#====================================================================================================
 # 객체 정의
+#====================================================================================================
+
 # 주인공 객체
 class Player(pygame.sprite.Sprite):
-    # 초기 설정
-    def __init__(self):
-        # 좌표, 각도, 속도 설정
-        self.x = SCREEN_WIDTH // 2
-        self.y = SCREEN_HEIGHT // 2
-        self.angle = 0
-        self.speed = 5
-        
-        # 이미지 설정
-        # 이미지 불러오기, convert_alpha()는 이미지의 배경을 투명하게 만듦
-        self.image = pygame.image.load("image/player.png").convert_alpha() 
-        # 이미지의 중심 좌표를 구함. 기본적으로 이미지의 좌상단이 기준이므로, 이미지의 크기의 반을 더해줌.
-        self.center = (self.x + self.image.get_width() // 2, self.y + self.image.get_height() // 2) 
-        # 객체 충돌 기준 설정
-        self.rect = self.image.get_rect()
-        self.rect.center = self.center
-    
-    # 이미지 회전
-    def rotate(self, angle):
-        # 이미지 회전, 회전한 이미지를 self.image에 오버라이드함.
-        self.image = pygame.transform.rotate(self.image, self.angle).convert_alpha() 
+	def __init__(self, pos, group):
+		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
+		self.image = pygame.image.load('graphics/player.png').convert_alpha()
+		self.rect = self.image.get_rect(center = pos)
+		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
+		self.speed = 10
 
-    # 이미지 그리기
-    def draw(self):
-        # 객체의 충돌 기준을 그림 (디버그용)
-        pygame.draw.rect(screen, BLACK, self.rect, 1)
-        # 이미지를 그림
-        screen.blit(self.image, (self.x, self.y))
-    
-    # 객체 이동, 객체의 충돌기준도 같이 움직이게 처리해줘야 함.
-    def move_up(self):
-        self.rect.centery -= self.speed
-        self.y -= self.speed
-    
-    def move_down(self):
-        self.rect.centery += self.speed
-        self.y += self.speed
-        
-    def move_left(self):
-        self.rect.centerx -= self.speed
-        self.x -= self.speed
-        
-    def move_right(self):
-        self.rect.centerx += self.speed
-        self.x += self.speed
-    def update(self):
-        pass
-        
-        
-# 적 개체
-class Zombie:
-    # 초기 설정
-    def __init__(self):
-        # 좌표, 각도, 속도 설정. 스폰은 랜덤으로 한다.
-        self.x = random.randrange(SCREEN_WIDTH)
-        self.y = random.randrange(SCREEN_HEIGHT)
-        self.angle = 0
-        self.speed = 2
-        
-        # 이미지 설정. 세부 사항은 주인공 객체와 동일함.
-        self.image = pygame.image.load("image/zombie.png").convert_alpha()
-        self.center = (self.x + self.image.get_width() // 2, self.y + self.image.get_height() // 2)
-        
-        # 객체 충돌 기준 설정
-        self.rect = self.image.get_rect()
-        self.rect.center = self.center
-    
-    # 이미지 그리기. 세부 사항은 주인공 객체와 동일함.
-    def draw(self):
-        pygame.draw.rect(screen, RED, self.rect, 1)
-        screen.blit(self.image, (self.x, self.y))
-    
-    # 객체 이동. 세부 사항은 주인공 객체와 동일함.
-    def move_up(self):
-        self.rect.centery -= self.speed
-        self.y -= self.speed
-    
-    def move_down(self):
-        self.rect.centery += self.speed
-        self.y += self.speed
-        
-    def move_left(self):
-        self.rect.centerx -= self.speed
-        self.x -= self.speed
-        
-    def move_right(self):
-        self.rect.centerx += self.speed
-        self.x += self.speed
+	# 주인공 이동
+	def input(self): 
+		keys = pygame.key.get_pressed()
 
-    # 충돌 기준 중심 보정
-    def set_rect_center(self, x, y):
-        # 랜덤 좌표 이동시 충돌 기준이 따라가지 않으므로, 충돌 기준을 보정해줌.
-        self.rect.center = (x + self.image.get_width() // 2, y + self.image.get_height() // 2)
+		# 키보드 입력에 따라 방향을 설정한다.
+		# 방향은 벡터로 표현한다. direction과 speed를 곱연산하여 최종 이동 속도를 구한다.
+		if keys[pygame.K_UP] or keys[pygame.K_w]:
+			self.direction.y = -1 
+		elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+			self.direction.y = 1
+		else:
+			self.direction.y = 0
 
-    # 좀비 개체 충돌 이벤트 처리
-    def collision(self):
-        # 충돌시 랜덤 좌표로 이동.
-        self.x = random.randrange(SCREEN_WIDTH)
-        self.y = random.randrange(SCREEN_HEIGHT)
-        # 충돌 기준 보정.
-        self.set_rect_center(self.x, self.y)
+		if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+			self.direction.x = 1
+		elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
+			self.direction.x = -1
+		else:
+			self.direction.x = 0
 
-# 점수 개체
-class Score:
-    # 초기 설정
-    def __init__(self):
-        # 점수, 텍스트 변수 선언
-        self.score = 0
-        self.text = "Score: "
+	def update(self):
+		self.input()
+		self.rect.center += self.direction * self.speed # 캐릭터 이동
 
-        # 폰트 설정 (폰트, 크기, 굵기, 기울임)
-        self.scoreText = pygame.font.SysFont("Consolas", 25, True, False)
+	def collision(self):
+		# 충돌시 랜덤 좌표로 이동.
+		self.x = random.randrange(SCREEN_WIDTH)
+		self.y = random.randrange(SCREEN_HEIGHT)
+		# 충돌 기준 보정.
+		self.set_rect_center(self.x, self.y)
+	
+	def fire(self):
+		bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))		
+		
 
-        # 텍스트 렌더 설정 (텍스트, 안티앨리어싱, 색상)
-        self.render = self.scoreText.render(self.text + str(self.score), True, BLACK)
+# 장애물 객체
+class Tree(pygame.sprite.Sprite):
+	def __init__(self, pos, group):
+		super().__init__(group)
+		self.image = pygame.image.load('graphics/tree.png').convert_alpha()
+		self.rect = self.image.get_rect(topleft = pos)
 
-        # 텍스트 렌더의 중심 좌표 설정
-        self.rect = self.render.get_rect()
-        self.rect.center = (SCREEN_WIDTH // 20, 20)
+class Enemy(pygame.sprite.Sprite):
+	def __init__(self, pos, group):
+		super().__init__(group)
+		self.image = pygame.image.load('graphics/enemy.png').convert_alpha()
+		self.rect = self.image.get_rect(topleft = pos)
+		self.direction = pygame.math.Vector2()
+		self.speed = 5
 
-    # 텍스트 그리기
-    def draw(self):
-        # 텍스트 렌더를 화면에 그림. render를 다시 설정해주는 이유는 점수가 바뀔 때마다 다시 렌더를 해줘야 하기 때문.
-        self.render = self.scoreText.render(self.text + str(self.score), True, BLACK)
-        screen.blit(self.render, self.rect)
-    
-    # 점수 설정. 점수를 가져와 더해줌.
-    def setScore(self, score):
-        self.score += score
-        
-# ================================================================================================  
+	def update(self):
+		self.direction = pygame.math.Vector2(player.rect.center) - pygame.math.Vector2(self.rect.center)
+		if self.direction.length() < 500 and self.direction.length() > 15:
+			self.direction.scale_to_length(self.speed)
+		else:
+			self.direction.scale_to_length(0)
+		self.rect.center += self.direction
 
-# 환경 변수 설정
-zombie_amount = 10 # 인 게임에서 변경 가능
-zombie_list = []
-
-# 게임 루프
-done = False
-clock = pygame.time.Clock()
-
-# 초기화
-
-# 플레이어 생성
-player = Player()
-# 적 생성
-for i in range(zombie_amount):
-    zombie_list.append(Zombie())
-# 점수 생성
-score = Score()
-score.setScore(100)
-
-# ================================================================================================  
-
-#게임 루프
-
-while not done:
-    # 초당 프레임 수 설정
-    clock.tick(60)
-
-    # 이벤트 처리
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            done = True
-            
-    # 플레이어 이동 처리. elif를 사용하지 않은 이유는 키를 동시에 누를 수 있기 때문.
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-        player.move_left()
-    if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-        player.move_right()
-    if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-        player.move_down()
-    if keys[pygame.K_w] or keys[pygame.K_UP]:
-        player.move_up()
-        
-    # 종합 좀비 이벤트 처리
-    for i in range(zombie_amount):
-        # 좀비 이동 처리. 플레이어와 좀비의 좌표를 비교해 좀비가 플레이어를 따라가도록 함.
-        if player.x > zombie_list[i].x:
-            zombie_list[i].move_right()
-        if player.x < zombie_list[i].x:
-            zombie_list[i].move_left()
-        if player.y > zombie_list[i].y:   
-            zombie_list[i].move_down()
-        if player.y < zombie_list[i].y:
-            zombie_list[i].move_up()
-            
-        # 좀비 충돌 처리
-        if zombie_list[i].rect.colliderect(player.rect):
-            # 충돌시 이벤트 처리
-            zombie_list[i].collision()
-            score.setScore(-5)
-            
-    # 장애물 개수가 8개 이하일 때만 새로운 장애물 생성
-    if len(obstacle_group) < 8:
-        obstacle = Obstacle(obstacle_group)
-        obstacle_group.add(obstacle)
-        
-    
-    if pygame.sprite.spritecollide(player,obstacle_group, False):
-            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-                player.move_right()
-            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-                player.move_left()
-            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-                player.move_up()
-            if keys[pygame.K_w] or keys[pygame.K_UP]:
-                player.move_down()
-    
-    # 모든 장애물 업데이트
-    obstacle_group.update()
-
-    # 게임 종료 조건 처리
-    if score.score <= 0:
-        # 알림창 띄우기. tkinter를 사용함.
-        Tk().wm_withdraw()
-        messagebox.showinfo("PyGameTest", "GAME OVER! ")
-        done = True
-
-    # 업데이트
-    screen.fill(WHITE)
-    obstacle_group.draw(screen)
-    
-    
-    # 객체 그리기
-    player.draw()
-    for i in range(zombie_amount):
-        zombie_list[i].draw()
-    score.draw()
+	# 충돌 기준 중심 보정
+	def set_rect_center(self, x, y):
+		# 랜덤 좌표 이동시 충돌 기준이 따라가지 않으므로, 충돌 기준을 보정해줌.
+		self.rect.center = (x + self.image.get_width() // 2, y + self.image.get_height() // 2)
    
-    pygame.display.flip()
+	def collision(self):
+		# 충돌시 랜덤 좌표로 이동.
+		self.x = randint(1000,2000)
+		self.y = randint(1000,2000)
+		# 충돌 기준 보정.
+		self.set_rect_center(self.x, self.y)
 
-# Pygame 종료
-pygame.quit()
+
+# 총알 객체
+class Bullet(pygame.sprite.Sprite):
+	def __init__(self, pos, speed, group):
+		super().__init__(group)
+		self.image = pygame.image.load('graphics/bullet.png').convert_alpha()
+		self.rect = self.image.get_rect(center = pos)
+		# 마우스 방향으로 총알을 발사함.
+		self.direction = pygame.math.Vector2(pygame.mouse.get_pos()) - (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2) # 마우스 좌표를 벡터로 변환 >> 마우스 좌표 - 화면 중심 좌표
+		self.normal_direction = self.direction.normalize() # 방향을 단위 벡터로 설정함 (캐릭터 이동 방식과 동일)
+		self.speed = speed
+		print(self.direction)
+
+	def update(self):
+		# 화면 밖으로 나가면 총알을 제거함.
+		if self.rect.centerx < 0 or self.rect.centerx > ROOM_WIDTH or self.rect.centery < 0 or self.rect.centery > ROOM_HEIGHT:
+			self.kill()
+		self.rect.center += self.normal_direction * self.speed
+
+# 카메라 객체
+class CameraGroup(pygame.sprite.Group):
+	def __init__(self):
+		super().__init__()
+		self.display_surface = pygame.display.get_surface()
+		# 카메라 설정
+		self.offset = pygame.math.Vector2()
+		self.half_w = self.display_surface.get_size()[0] // 2
+		self.half_h = self.display_surface.get_size()[1] // 2
+
+		# 카메라 경계 설정
+		self.camera_borders = {'left': 500, 'right': 500, 'top': 300, 'bottom': 300}
+		l = self.camera_borders['left']
+		t = self.camera_borders['top']
+		w = self.display_surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
+		h = self.display_surface.get_size()[1]  - (self.camera_borders['top'] + self.camera_borders['bottom'])
+		self.camera_rect = pygame.Rect(l,t,w,h)
+
+		# 배경 설정
+		self.ground_surf = pygame.image.load('graphics/ground.png').convert_alpha()
+		self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
+
+		# 카메라 이동 속도 설정
+		self.keyboard_speed = 5
+		self.mouse_speed = 0.2
+
+		# 룸 설정
+		self.zoom_scale = 1
+		self.internal_surf_size = (ROOM_WIDTH,ROOM_HEIGHT)
+		self.internal_surf = pygame.Surface(self.internal_surf_size, pygame.SRCALPHA)
+		self.internal_rect = self.internal_surf.get_rect(center = (self.half_w,self.half_h))
+		self.internal_surface_size_vector = pygame.math.Vector2(self.internal_surf_size)
+		self.internal_offset = pygame.math.Vector2()
+		self.internal_offset.x = self.internal_surf_size[0] // 2 - self.half_w
+		self.internal_offset.y = self.internal_surf_size[1] // 2 - self.half_h
+
+	# 객체가 카메라의 중앙에만 있도록 함.
+	def center_target_camera(self,target):
+		self.offset.x = target.rect.centerx - self.half_w
+		self.offset.y = target.rect.centery - self.half_h
+
+	# 객체가 카메라 경계 안에 있도록 함. (추천)
+	def box_target_camera(self,target):
+
+		if target.rect.left < self.camera_rect.left:
+			self.camera_rect.left = target.rect.left
+		if target.rect.right > self.camera_rect.right:
+			self.camera_rect.right = target.rect.right
+		if target.rect.top < self.camera_rect.top:
+			self.camera_rect.top = target.rect.top
+		if target.rect.bottom > self.camera_rect.bottom:
+			self.camera_rect.bottom = target.rect.bottom
+
+		self.offset.x = self.camera_rect.left - self.camera_borders['left']
+		self.offset.y = self.camera_rect.top - self.camera_borders['top']
+	
+	# 키보드 입력으로 카메라를 이동함.
+	def keyboard_control(self):
+		keys = pygame.key.get_pressed()
+		if keys[pygame.K_j]: self.camera_rect.x -= self.keyboard_speed
+		if keys[pygame.K_l]: self.camera_rect.x += self.keyboard_speed
+		if keys[pygame.K_i]: self.camera_rect.y -= self.keyboard_speed
+		if keys[pygame.K_j]: self.camera_rect.y += self.keyboard_speed
+
+		self.offset.x = self.camera_rect.left - self.camera_borders['left']
+		self.offset.y = self.camera_rect.top - self.camera_borders['top']  
+		
+	# 마우스 입력으로 카메라를 이동함.
+	def mouse_control(self):
+		mouse = pygame.math.Vector2(pygame.mouse.get_pos())
+		mouse_offset_vector = pygame.math.Vector2()
+
+		left_border = self.camera_borders['left']
+		top_border = self.camera_borders['top']
+		right_border = self.display_surface.get_size()[0] - self.camera_borders['right']
+		bottom_border = self.display_surface.get_size()[1] - self.camera_borders['bottom']
+
+		if top_border < mouse.y < bottom_border:
+			if mouse.x < left_border:
+				mouse_offset_vector.x = mouse.x - left_border
+				pygame.mouse.set_pos((left_border,mouse.y))
+			if mouse.x > right_border:
+				mouse_offset_vector.x = mouse.x - right_border
+				pygame.mouse.set_pos((right_border,mouse.y))
+		elif mouse.y < top_border:
+			if mouse.x < left_border:
+				mouse_offset_vector = mouse - pygame.math.Vector2(left_border,top_border)
+				pygame.mouse.set_pos((left_border,top_border))
+			if mouse.x > right_border:
+				mouse_offset_vector = mouse - pygame.math.Vector2(right_border,top_border)
+				pygame.mouse.set_pos((right_border,top_border))
+		elif mouse.y > bottom_border:
+			if mouse.x < left_border:
+				mouse_offset_vector = mouse - pygame.math.Vector2(left_border,bottom_border)
+				pygame.mouse.set_pos((left_border,bottom_border))
+			if mouse.x > right_border:
+				mouse_offset_vector = mouse - pygame.math.Vector2(right_border,bottom_border)
+				pygame.mouse.set_pos((right_border,bottom_border))
+
+		if left_border < mouse.x < right_border:
+			if mouse.y < top_border:
+				mouse_offset_vector.y = mouse.y - top_border
+				pygame.mouse.set_pos((mouse.x,top_border))
+			if mouse.y > bottom_border:
+				mouse_offset_vector.y = mouse.y - bottom_border
+				pygame.mouse.set_pos((mouse.x,bottom_border))
+
+		self.offset += mouse_offset_vector * self.mouse_speed
+		
+	# 줌을 키보드 입력으로 조절함.
+	def zoom_keyboard_control(self):
+		keys = pygame.key.get_pressed()
+		if keys[pygame.K_q]:
+			self.zoom_scale += 0.1
+		if keys[pygame.K_e]:
+			self.zoom_scale -= 0.1
+
+	# 카메라 업데이트
+	def custom_draw(self,player):
+		
+		# 어떤 유형을 사용할지 선택
+
+		self.center_target_camera(player)
+		#self.box_target_camera(player)
+		# self.keyboard_control()
+		#self.mouse_control()
+		#self.zoom_keyboard_control()
+
+		self.internal_surf.fill('#71ddee') # 기본 배경 색상 설정
+
+		# 배경 그리기
+		ground_offset = self.ground_rect.topleft - self.offset + self.internal_offset # 배경의 위치를 카메라에 맞게 설정
+		self.internal_surf.blit(self.ground_surf,ground_offset) # 배경을 그림
+
+		# 객체 그리기
+		for sprite in sorted(self.sprites(),key = lambda sprite: sprite.rect.centery): # 객체를 y좌표 기준으로 정렬
+			offset_pos = sprite.rect.topleft - self.offset + self.internal_offset # 객체의 위치를 카메라에 맞게 설정
+			self.internal_surf.blit(sprite.image,offset_pos) # 객체를 그림
+
+		scaled_surf = pygame.transform.scale(self.internal_surf,self.internal_surface_size_vector * self.zoom_scale) # 줌을 적용함
+		scaled_rect = scaled_surf.get_rect(center = (self.half_w,self.half_h)) # 줌을 적용한 후 카메라의 중심을 다시 설정함
+		
+		self.display_surface.blit(scaled_surf,scaled_rect) # 최종 업데이트 된 정보를 화면에 그림
+
+#====================================================================================================
+# 구동부
+#====================================================================================================
+pygame.init()
+screen = pygame.display.set_mode((1280,720)) # 화면 설정
+clock = pygame.time.Clock()
+pygame.event.set_grab(False) # 마우스 포커스 설정 (True : 마우스 커서가 화면 밖으로 나가지 못하게 함)
+
+# 환경변수 설정
+ObstacleCount = 20 # 장애물 개수
+EnemyCount = 5 # 적 개수
+EnemyList = [] # 적 리스트
+BulletSpeed = 25 # 총알 속도
+
+# 객체 생성 및 설정
+camera_group = CameraGroup() # 카메라 객체 생성
+bullet_group = pygame.sprite.Group() # 총알 그룹 생성
+
+player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함
+
+for i in range(ObstacleCount): # 장애물 객체 생성
+	random_x = randint(1000,2000)
+	random_y = randint(1000,2000)
+	Tree((random_x,random_y),camera_group) # 장애물 객체 생성, 카메라 그룹에 속함
+
+for i in range(EnemyCount): # 적 객체 생성
+	random_x = randint(1000,2000)
+	random_y = randint(1000,2000)
+	EnemyList.append(Enemy((random_x,random_y),camera_group)) # 적 객체 생성, 카메라 그룹에 속함
+
+while True:
+	for event in pygame.event.get():
+		# 종료 조건
+		if event.type == pygame.QUIT: 
+			pygame.quit()
+			sys.exit()
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_ESCAPE:
+				pygame.quit()
+				sys.exit()
+		
+		# 마우스 휠로 줌 조작
+		#if event.type == pygame.MOUSEWHEEL:
+		#	camera_group.zoom_scale += event.y * 0.03
+	# 그리기
+		for i in range(EnemyCount):
+			# 적과 충돌 처리
+			if EnemyList[i].rect.colliderect(player.rect):
+				EnemyList[i].collision()
+			# 총알과 충돌 처리
+			if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
+				EnemyList[i].collision()
+
+		# 마우스 왼쪽 버튼으로 총알 발사
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			if event.button == 1:
+				player.fire()
+
+	# 객체 업데이트
+	screen.fill('#71ddee')
+	camera_group.update()
+	camera_group.custom_draw(player)
+
+	pygame.display.update()
+	clock.tick(60)
