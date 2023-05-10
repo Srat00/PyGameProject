@@ -17,7 +17,7 @@ Python Survival Game Project
 🟨 - 작업중
 🟥 - 미구현
 
-### Week 1
+### Week 1 (Deadline : ~~05-09~~ 05-15)
 
 🟩 투사체 발사 구현 [어록희, 05-09]
 
@@ -31,7 +31,7 @@ Python Survival Game Project
 
   
 
-### Week 2
+### Week 2 (Deadline : 05-15 )
 
 🟨 플레이어의 성장 구현 [어록희]
 
