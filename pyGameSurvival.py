@@ -24,8 +24,8 @@ from random import randint
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-ROOM_WIDTH = 2500
-ROOM_HEIGHT = 2500
+ROOM_WIDTH = 1024*3
+ROOM_HEIGHT = 1024*3
 
 BLACK = (0, 0, 0)
 
@@ -67,11 +67,7 @@ class Player(pygame.sprite.Sprite):
 		self.rect.center += self.direction * self.speed # 캐릭터 이동
 
 	def collision(self):
-		# 충돌시 랜덤 좌표로 이동.
-		self.x = random.randrange(SCREEN_WIDTH)
-		self.y = random.randrange(SCREEN_HEIGHT)
-		# 충돌 기준 보정.
-		self.set_rect_center(self.x, self.y)
+		pass
 	
 	def fire(self):
 		bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))		
@@ -123,7 +119,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2(pygame.mouse.get_pos()) - (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2) # 마우스 좌표를 벡터로 변환 >> 마우스 좌표 - 화면 중심 좌표
 		self.normal_direction = self.direction.normalize() # 방향을 단위 벡터로 설정함 (캐릭터 이동 방식과 동일)
 		self.speed = speed
-		print(self.direction)
+		#print(self.normal_direction)
 
 	def update(self):
 		# 화면 밖으로 나가면 총알을 제거함.
@@ -319,12 +315,13 @@ while True:
 		# 마우스 휠로 줌 조작
 		#if event.type == pygame.MOUSEWHEEL:
 		#	camera_group.zoom_scale += event.y * 0.03
-	# 그리기
+
+	# 적군 처리
 		for i in range(EnemyCount):
-			# 적과 충돌 처리
+			#플레이어와 충돌 처리
 			if EnemyList[i].rect.colliderect(player.rect):
 				EnemyList[i].collision()
-			# 총알과 충돌 처리
+			#총알과 충돌 처리
 			if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
 				EnemyList[i].collision()
 
