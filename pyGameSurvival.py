@@ -24,8 +24,10 @@ from random import randint
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-ROOM_WIDTH = 2500
-ROOM_HEIGHT = 2500
+ROOM_WIDTH = 1024*3
+ROOM_HEIGHT = 1024*3
+GROUND_WIDTH = 3648
+GROUND_HEIGHT= 3200
 
 BLACK = (0, 0, 0)
 
@@ -40,7 +42,7 @@ class Player(pygame.sprite.Sprite):
 		self.image = pygame.image.load('graphics/player.png').convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
-		self.speed = 10
+		self.speed = 30
 
 	# 주인공 이동
 	def input(self): 
@@ -49,16 +51,28 @@ class Player(pygame.sprite.Sprite):
 		# 키보드 입력에 따라 방향을 설정한다.
 		# 방향은 벡터로 표현한다. direction과 speed를 곱연산하여 최종 이동 속도를 구한다.
 		if keys[pygame.K_UP] or keys[pygame.K_w]:
-			self.direction.y = -1 
+			if self.rect.center[1] < 0:     #y좌표가 0보다 작으면(위로 나가려고 하면)  y의 방향값을 0으로 바꿔
+				self.direction.y = 0		#update함수의 self.rect.center += self.direction * self.speed 계산에서 y값이 0이 된다.
+			else:
+				self.direction.y = -1 		#그렇지 않을 때는 전의 코드와 같음
 		elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
-			self.direction.y = 1
+			if self.rect.center[1] > GROUND_HEIGHT:
+				self.direction.y = 0
+			else:
+				self.direction.y = 1
 		else:
 			self.direction.y = 0
 
 		if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-			self.direction.x = 1
+			if self.rect.center[0] > GROUND_WIDTH:
+				self.direction.x = 0
+			else:
+				self.direction.x = 1
 		elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
-			self.direction.x = -1
+			if self.rect.center[0] < 0:
+				self.direction.x = 0
+			else:
+				self.direction.x = -1
 		else:
 			self.direction.x = 0
 
@@ -66,12 +80,9 @@ class Player(pygame.sprite.Sprite):
 		self.input()
 		self.rect.center += self.direction * self.speed # 캐릭터 이동
 
+
 	def collision(self):
-		# 충돌시 랜덤 좌표로 이동.
-		self.x = random.randrange(SCREEN_WIDTH)
-		self.y = random.randrange(SCREEN_HEIGHT)
-		# 충돌 기준 보정.
-		self.set_rect_center(self.x, self.y)
+		pass
 	
 	def fire(self):
 		bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))		
@@ -84,17 +95,18 @@ class Tree(pygame.sprite.Sprite):
 		self.image = pygame.image.load('graphics/tree.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft = pos)
 
+# 적 객체
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
 		self.image = pygame.image.load('graphics/enemy.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft = pos)
 		self.direction = pygame.math.Vector2()
-		self.speed = 5
+		self.speed = 20
 
 	def update(self):
 		self.direction = pygame.math.Vector2(player.rect.center) - pygame.math.Vector2(self.rect.center)
-		if self.direction.length() < 500 and self.direction.length() > 15:
+		if self.direction.length() < 1000 and self.direction.length() > 15: #500에서 1000으로 더 멀리서도 캐릭터를 향해 찾아오게 함
 			self.direction.scale_to_length(self.speed)
 		else:
 			self.direction.scale_to_length(0)
@@ -123,7 +135,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2(pygame.mouse.get_pos()) - (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2) # 마우스 좌표를 벡터로 변환 >> 마우스 좌표 - 화면 중심 좌표
 		self.normal_direction = self.direction.normalize() # 방향을 단위 벡터로 설정함 (캐릭터 이동 방식과 동일)
 		self.speed = speed
-		print(self.direction)
+		#print(self.normal_direction)
 
 	def update(self):
 		# 화면 밖으로 나가면 총알을 제거함.
@@ -263,7 +275,7 @@ class CameraGroup(pygame.sprite.Group):
 
 		# 배경 그리기
 		ground_offset = self.ground_rect.topleft - self.offset + self.internal_offset # 배경의 위치를 카메라에 맞게 설정
-		self.internal_surf.blit(self.ground_surf,ground_offset) # 배경을 그림
+		self.internal_surf.blit(self.ground_surf, ground_offset) # 배경을 그림
 
 		# 객체 그리기
 		for sprite in sorted(self.sprites(),key = lambda sprite: sprite.rect.centery): # 객체를 y좌표 기준으로 정렬
@@ -284,7 +296,7 @@ clock = pygame.time.Clock()
 pygame.event.set_grab(False) # 마우스 포커스 설정 (True : 마우스 커서가 화면 밖으로 나가지 못하게 함)
 
 # 환경변수 설정
-ObstacleCount = 20 # 장애물 개수
+ObstacleCount = 50 # 장애물 개수
 EnemyCount = 5 # 적 개수
 EnemyList = [] # 적 리스트
 BulletSpeed = 25 # 총알 속도
@@ -293,11 +305,11 @@ BulletSpeed = 25 # 총알 속도
 camera_group = CameraGroup() # 카메라 객체 생성
 bullet_group = pygame.sprite.Group() # 총알 그룹 생성
 
-player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함
+player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함 
 
 for i in range(ObstacleCount): # 장애물 객체 생성
-	random_x = randint(1000,2000)
-	random_y = randint(1000,2000)
+	random_x = randint(0,GROUND_WIDTH)
+	random_y = randint(0,GROUND_HEIGHT)
 	Tree((random_x,random_y),camera_group) # 장애물 객체 생성, 카메라 그룹에 속함
 
 for i in range(EnemyCount): # 적 객체 생성
@@ -319,12 +331,13 @@ while True:
 		# 마우스 휠로 줌 조작
 		#if event.type == pygame.MOUSEWHEEL:
 		#	camera_group.zoom_scale += event.y * 0.03
-	# 그리기
+
+	# 적군 처리
 		for i in range(EnemyCount):
-			# 적과 충돌 처리
+			#플레이어와 충돌 처리
 			if EnemyList[i].rect.colliderect(player.rect):
 				EnemyList[i].collision()
-			# 총알과 충돌 처리
+			#총알과 충돌 처리
 			if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
 				EnemyList[i].collision()
 
@@ -332,6 +345,7 @@ while True:
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			if event.button == 1:
 				player.fire()
+
 
 	# 객체 업데이트
 	screen.fill('#71ddee')
