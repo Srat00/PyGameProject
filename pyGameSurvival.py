@@ -17,8 +17,6 @@
 #====================================================================================================
 import pygame, sys
 from random import randint
-
-
 #====================================================================================================
 #상수 정의
 #====================================================================================================
@@ -76,7 +74,6 @@ class Player(pygame.sprite.Sprite):
 				elif self.direction.y < 0:
 					self.rect.top = obstacle.collision_rect.bottom  # 위쪽으로 이동 중이면 충돌한 장애물의 아래쪽으로 위치 고정
 
-
 	def collision(self):
 		pass
 	
@@ -100,7 +97,6 @@ class Tree(pygame.sprite.Sprite):
 
 	def update(self):
 		pass
-
 
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
@@ -311,6 +307,7 @@ BulletSpeed = 25 # 총알 속도
 camera_group = CameraGroup() # 카메라 객체 생성
 bullet_group = pygame.sprite.Group() # 총알 그룹 생성
 obstacles = pygame.sprite.Group()#tree를 넣을 스프라이트 그룹 생성
+
 player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함
 
 for i in range(ObstacleCount): # 장애물 객체 생성
@@ -352,9 +349,6 @@ while True:
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			if event.button == 1:
 				player.fire()
-
-
-
 
 	# 객체 업데이트
 	screen.fill('#71ddee')
