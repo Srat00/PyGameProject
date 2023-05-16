@@ -51,7 +51,7 @@ class Player(pygame.sprite.Sprite):
 		# 키보드 입력에 따라 방향을 설정한다.
 		# 방향은 벡터로 표현한다. direction과 speed를 곱연산하여 최종 이동 속도를 구한다.
 		if keys[pygame.K_UP] or keys[pygame.K_w]:
-			if self.rect.center[1] < 0:     #y좌표가 0보다 작으면(위로 나가려고 하면)  y의 방향값을 0으로 바꿔
+			if self.rect.center[1] < 0:	 #y좌표가 0보다 작으면(위로 나가려고 하면)y의 방향값을 0으로 바꿔
 				self.direction.y = 0		#update함수의 self.rect.center += self.direction * self.speed 계산에서 y값이 0이 된다.
 			else:
 				self.direction.y = -1 		#그렇지 않을 때는 전의 코드와 같음
@@ -116,7 +116,7 @@ class Enemy(pygame.sprite.Sprite):
 	def set_rect_center(self, x, y):
 		# 랜덤 좌표 이동시 충돌 기준이 따라가지 않으므로, 충돌 기준을 보정해줌.
 		self.rect.center = (x + self.image.get_width() // 2, y + self.image.get_height() // 2)
-   
+
 	def collision(self):
 		# 충돌시 랜덤 좌표로 이동.
 		self.x = randint(1000,2000)
@@ -157,8 +157,8 @@ class CameraGroup(pygame.sprite.Group):
 		self.camera_borders = {'left': 500, 'right': 500, 'top': 300, 'bottom': 300}
 		l = self.camera_borders['left']
 		t = self.camera_borders['top']
-		w = self.display_surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
-		h = self.display_surface.get_size()[1]  - (self.camera_borders['top'] + self.camera_borders['bottom'])
+		w = self.display_surface.get_size()[0]- (self.camera_borders['left'] + self.camera_borders['right'])
+		h = self.display_surface.get_size()[1]- (self.camera_borders['top'] + self.camera_borders['bottom'])
 		self.camera_rect = pygame.Rect(l,t,w,h)
 
 		# 배경 설정
@@ -208,7 +208,7 @@ class CameraGroup(pygame.sprite.Group):
 		if keys[pygame.K_j]: self.camera_rect.y += self.keyboard_speed
 
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
-		self.offset.y = self.camera_rect.top - self.camera_borders['top']  
+		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 		
 	# 마우스 입력으로 카메라를 이동함.
 	def mouse_control(self):
@@ -287,9 +287,34 @@ class CameraGroup(pygame.sprite.Group):
 		
 		self.display_surface.blit(scaled_surf,scaled_rect) # 최종 업데이트 된 정보를 화면에 그림
 
+def game_start():
+
+	start_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+	pygame.font.init()
+	start_font = pygame.font.SysFont('Sans', 40, True, True)
+	start_message = 'Preess the Space key to start.'
+	start_message_object = start_font.render(start_message, True, (0,0,0))
+	start_message_rect = start_message_object.get_rect()
+	start_message_rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+
+	while True:
+		for event in pygame.event.get():
+			# 종료 조건
+			if event.type == pygame.QUIT: 
+				pygame.quit()
+				sys.exit()
+			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+				return
+		start_screen.fill((255,255,255))
+		start_screen.blit(start_message_object, start_message_rect)
+		pygame.display.update()
+
 #====================================================================================================
 # 구동부
 #====================================================================================================
+
+game_start()
+
 pygame.init()
 screen = pygame.display.set_mode((1280,720)) # 화면 설정
 clock = pygame.time.Clock()
@@ -331,9 +356,8 @@ while True:
 		# 마우스 휠로 줌 조작
 		#if event.type == pygame.MOUSEWHEEL:
 		#	camera_group.zoom_scale += event.y * 0.03
-
 	# 적군 처리
-		for i in range(EnemyCount):
+	for i in range(EnemyCount):
 			#플레이어와 충돌 처리
 			if EnemyList[i].rect.colliderect(player.rect):
 				EnemyList[i].collision()
@@ -342,9 +366,9 @@ while True:
 				EnemyList[i].collision()
 
 		# 마우스 왼쪽 버튼으로 총알 발사
-		if event.type == pygame.MOUSEBUTTONDOWN:
-			if event.button == 1:
-				player.fire()
+	if event.type == pygame.MOUSEBUTTONDOWN:
+		if event.button == 1:
+			player.fire()
 
 
 	# 객체 업데이트
