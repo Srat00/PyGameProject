@@ -17,7 +17,6 @@
 #====================================================================================================
 import pygame, sys
 from random import randint
-
 #====================================================================================================
 #상수 정의
 #====================================================================================================
@@ -43,28 +42,37 @@ class Player(pygame.sprite.Sprite):
 		self.speed = 10
 
 	# 주인공 이동
-	def input(self): 
+	def input(self):
 		keys = pygame.key.get_pressed()
-
-		# 키보드 입력에 따라 방향을 설정한다.
-		# 방향은 벡터로 표현한다. direction과 speed를 곱연산하여 최종 이동 속도를 구한다.
+		direction = pygame.Vector2(0,0)
 		if keys[pygame.K_UP] or keys[pygame.K_w]:
-			self.direction.y = -1 
-		elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
-			self.direction.y = 1
-		else:
-			self.direction.y = 0
-
+			direction.y -= 1
+		if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+			direction.y += 1
 		if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-			self.direction.x = 1
-		elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
-			self.direction.x = -1
-		else:
-			self.direction.x = 0
+			direction.x += 1
+		if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+			direction.x -= 1
+		self.direction = direction.normalize() if direction.length() > 0 else pygame.Vector2(0,0)
 
 	def update(self):
 		self.input()
-		self.rect.center += self.direction * self.speed # 캐릭터 이동
+		if self.direction != pygame.Vector2(0,0): # 방향이 정해져 있을 때만 이동
+			new_rect = self.rect.move(self.direction * self.speed)
+			if not any(obstacle.collision_rect.colliderect(new_rect) for obstacle in obstacles):
+				self.rect = new_rect
+
+		# 모든 장애물과 충돌 검사 (각 장애물의 충돌 영역인 collision_rect와 플레이어의 충돌 영역인 rect를 이용)
+		for obstacle in obstacles:
+			if self.rect.colliderect(obstacle.collision_rect):
+				if self.direction.x > 0:
+					self.rect.right = obstacle.collision_rect.left  # 오른쪽으로 이동 중이면 충돌한 장애물의 왼쪽으로 위치 고정
+				elif self.direction.x < 0:
+					self.rect.left = obstacle.collision_rect.right  # 왼쪽으로 이동 중이면 충돌한 장애물의 오른쪽으로 위치 고정
+				elif self.direction.y > 0:
+					self.rect.bottom = obstacle.collision_rect.top  # 아래쪽으로 이동 중이면 충돌한 장애물의 위쪽으로 위치 고정
+				elif self.direction.y < 0:
+					self.rect.top = obstacle.collision_rect.bottom  # 위쪽으로 이동 중이면 충돌한 장애물의 아래쪽으로 위치 고정
 
 	def collision(self):
 		pass
@@ -78,7 +86,17 @@ class Tree(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
 		self.image = pygame.image.load('graphics/tree.png').convert_alpha()
-		self.rect = self.image.get_rect(topleft = pos)
+		self.rect = self.image.get_rect(topleft=pos)
+		self.collision_rect = pygame.Rect(self.rect.left, self.rect.top + self.rect.height // 2, self.rect.width, self.rect.height // 2-10)  # 충돌 박스 크기 수정
+		self.colliding=False # 지금까지 만들어진 tree 객체들과의 충돌 검사를 위한 변수
+
+		while pygame.sprite.spritecollide(self,obstacles,False):
+				self.rect.topleft = (randint(1000, 2000), randint(1000, 2000))
+				self.collision_rect.topleft = (self.rect.left, self.rect.top + self.rect.height // 2)
+
+
+	def update(self):
+		pass
 
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
@@ -288,13 +306,15 @@ BulletSpeed = 25 # 총알 속도
 # 객체 생성 및 설정
 camera_group = CameraGroup() # 카메라 객체 생성
 bullet_group = pygame.sprite.Group() # 총알 그룹 생성
+obstacles = pygame.sprite.Group()#tree를 넣을 스프라이트 그룹 생성
 
 player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함
 
 for i in range(ObstacleCount): # 장애물 객체 생성
 	random_x = randint(1000,2000)
 	random_y = randint(1000,2000)
-	Tree((random_x,random_y),camera_group) # 장애물 객체 생성, 카메라 그룹에 속함
+	tree=Tree((random_x,random_y),camera_group) # 장애물 객체 생성, 카메라 그룹에 속함
+	obstacles.add(tree) # 생성된 Tree 객체를 obstale 스프라이트 그룹에 추가한다.
 
 for i in range(EnemyCount): # 적 객체 생성
 	random_x = randint(1000,2000)
