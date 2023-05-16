@@ -109,7 +109,7 @@ class Tree(pygame.sprite.Sprite):
 		self.image = pygame.image.load('graphics/tree.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft=pos)
 		self.collision_rect = pygame.Rect(self.rect.left, self.rect.top + self.rect.height // 2, self.rect.width, self.rect.height // 2-10)  # 충돌 박스 크기 수정
-		self.colliding=False # 지금까지 만들어진 tree 객체들과의 충돌 검사를 위한 변수
+		self.colliding = False # 지금까지 만들어진 tree 객체들과의 충돌 검사를 위한 변수
 
 		while pygame.sprite.spritecollide(self,obstacles,False):
 				self.rect.topleft = (randint(1000, 2000), randint(1000, 2000))
@@ -126,7 +126,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.image = pygame.image.load('graphics/enemy.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft = pos)
 		self.direction = pygame.math.Vector2()
-		self.speed = 20
+		self.speed = 5
 
 	def update(self):
 		self.direction = pygame.math.Vector2(player.rect.center) - pygame.math.Vector2(self.rect.center)
@@ -311,12 +311,21 @@ class CameraGroup(pygame.sprite.Group):
 		
 		self.display_surface.blit(scaled_surf,scaled_rect) # 최종 업데이트 된 정보를 화면에 그림
 
-def game_start():
+#====================================================================================================
+# 함수정의
+#====================================================================================================
 
+# 마우스 위치 반환
+def get_normalized_mouse_pos():
+	direction = pygame.math.Vector2(pygame.mouse.get_pos()) - (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2) # 마우스 좌표를 벡터로 변환 >> 마우스 좌표 - 화면 중심 좌표
+	normal_direction = direction.normalize() # 방향을 단위 벡터로 설정함 (캐릭터 이동 방식과 동일)
+	return normal_direction
+    
+def game_start():
 	start_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 	pygame.font.init()
 	start_font = pygame.font.SysFont('Sans', 40, True, True)
-	start_message = 'Preess the Space key to start.'
+	start_message = 'Press the Space key to start.'
 	start_message_object = start_font.render(start_message, True, (0,0,0))
 	start_message_rect = start_message_object.get_rect()
 	start_message_rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
@@ -333,16 +342,6 @@ def game_start():
 		start_screen.blit(start_message_object, start_message_rect)
 		pygame.display.update()
 
-#====================================================================================================
-# 함수정의
-#====================================================================================================
-
-# 마우스 위치 반환
-def get_normalized_mouse_pos():
-	direction = pygame.math.Vector2(pygame.mouse.get_pos()) - (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2) # 마우스 좌표를 벡터로 변환 >> 마우스 좌표 - 화면 중심 좌표
-	normal_direction = direction.normalize() # 방향을 단위 벡터로 설정함 (캐릭터 이동 방식과 동일)
-	return normal_direction
-    
 
 #====================================================================================================
 # 구동부
@@ -408,10 +407,10 @@ while True:
 			if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
 				EnemyList[i].collision()
 
-		# 마우스 왼쪽 버튼으로 총알 발사
-	if event.type == pygame.MOUSEBUTTONDOWN:
-		if event.button == 1:
-			player.fire()
+			# 마우스 왼쪽 버튼으로 총알 발사
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			if event.button == 1:
+				player.fire()
 
 
 	# 객체 업데이트
