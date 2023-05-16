@@ -37,10 +37,13 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
 		self.image = pygame.image.load('graphics/player.png').convert_alpha()
+		self.image_right = self.image
+		self.image_left = pygame.transform.flip(self.image, True, False)
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
 		self.speed = 10
-
+		
+  
 	# 주인공 이동
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -78,7 +81,7 @@ class Player(pygame.sprite.Sprite):
 		pass
 	
 	def fire(self):
-		bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))		
+		bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
 		
 
 # 장애물 객체
@@ -137,8 +140,8 @@ class Bullet(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2(pygame.mouse.get_pos()) - (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2) # 마우스 좌표를 벡터로 변환 >> 마우스 좌표 - 화면 중심 좌표
 		self.normal_direction = self.direction.normalize() # 방향을 단위 벡터로 설정함 (캐릭터 이동 방식과 동일)
 		self.speed = speed
-		#print(self.normal_direction)
-
+		print(self.direction)
+  
 	def update(self):
 		# 화면 밖으로 나가면 총알을 제거함.
 		if self.rect.centerx < 0 or self.rect.centerx > ROOM_WIDTH or self.rect.centery < 0 or self.rect.centery > ROOM_HEIGHT:
@@ -290,6 +293,17 @@ class CameraGroup(pygame.sprite.Group):
 		self.display_surface.blit(scaled_surf,scaled_rect) # 최종 업데이트 된 정보를 화면에 그림
 
 #====================================================================================================
+# 함수정의
+#====================================================================================================
+
+# 마우스 위치 반환
+def get_normalized_mouse_pos():
+	direction = pygame.math.Vector2(pygame.mouse.get_pos()) - (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2) # 마우스 좌표를 벡터로 변환 >> 마우스 좌표 - 화면 중심 좌표
+	normal_direction = direction.normalize() # 방향을 단위 벡터로 설정함 (캐릭터 이동 방식과 동일)
+	return normal_direction
+    
+
+#====================================================================================================
 # 구동부
 #====================================================================================================
 pygame.init()
@@ -331,10 +345,15 @@ while True:
 			if event.key == pygame.K_ESCAPE:
 				pygame.quit()
 				sys.exit()
-		
+  
 		# 마우스 휠로 줌 조작
 		#if event.type == pygame.MOUSEWHEEL:
 		#	camera_group.zoom_scale += event.y * 0.03
+  
+		if get_normalized_mouse_pos().x > 0:
+			player.image = player.image_right
+		else:
+			player.image = player.image_left
 
 	# 적군 처리
 		for i in range(EnemyCount):
