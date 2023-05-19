@@ -115,7 +115,6 @@ class Tree(pygame.sprite.Sprite):
 				self.rect.topleft = (randint(1000, 2000), randint(1000, 2000))
 				self.collision_rect.topleft = (self.rect.left, self.rect.top + self.rect.height // 2)
 
-
 	def update(self):
 		pass
 
@@ -206,6 +205,7 @@ class CameraGroup(pygame.sprite.Group):
 	# 객체가 카메라의 중앙에만 있도록 함.
 	def center_target_camera(self,target):
 		self.offset.x = target.rect.centerx - self.half_w
+		# if self.offset.x <= 
 		self.offset.y = target.rect.centery - self.half_h
 
 	# 객체가 카메라 경계 안에 있도록 함. (추천)
