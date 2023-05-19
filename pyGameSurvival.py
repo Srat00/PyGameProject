@@ -205,23 +205,32 @@ class CameraGroup(pygame.sprite.Group):
 	# 객체가 카메라의 중앙에만 있도록 함.
 	def center_target_camera(self,target):
 		self.offset.x = target.rect.centerx - self.half_w
-		# if self.offset.x <= 
+		if self.offset.x < 0 - 40: #player의 크기 64 고려
+			self.offset.x = 0 - 40 #더 이상 안움직이게
+		if self.offset.x > GROUND_WIDTH - SCREEN_WIDTH + 75:
+			self.offset.x = GROUND_WIDTH - SCREEN_WIDTH + 75
+
 		self.offset.y = target.rect.centery - self.half_h
+		if self.offset.y < 0 - 75: #player의 크기 64 고려
+			self.offset.y = 0 - 75 #더 이상 안움직이게
+		if self.offset.y > GROUND_HEIGHT - SCREEN_HEIGHT + 40:
+			self.offset.y = GROUND_HEIGHT - SCREEN_HEIGHT + 40
+		
 
 	# 객체가 카메라 경계 안에 있도록 함. (추천)
-	def box_target_camera(self,target):
+	# def box_target_camera(self,target):
 
-		if target.rect.left < self.camera_rect.left:
-			self.camera_rect.left = target.rect.left
-		if target.rect.right > self.camera_rect.right:
-			self.camera_rect.right = target.rect.right
-		if target.rect.top < self.camera_rect.top:
-			self.camera_rect.top = target.rect.top
-		if target.rect.bottom > self.camera_rect.bottom:
-			self.camera_rect.bottom = target.rect.bottom
+	# 	if target.rect.left < self.camera_rect.left:
+	# 		self.camera_rect.left = target.rect.left
+	# 	if target.rect.right > self.camera_rect.right:
+	# 		self.camera_rect.right = target.rect.right
+	# 	if target.rect.top < self.camera_rect.top:
+	# 		self.camera_rect.top = target.rect.top
+	# 	if target.rect.bottom > self.camera_rect.bottom:
+	# 		self.camera_rect.bottom = target.rect.bottom
 
-		self.offset.x = self.camera_rect.left - self.camera_borders['left']
-		self.offset.y = self.camera_rect.top - self.camera_borders['top']
+	# 	self.offset.x = self.camera_rect.left - self.camera_borders['left']
+	# 	self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	
 	# 키보드 입력으로 카메라를 이동함.
 	def keyboard_control(self):
