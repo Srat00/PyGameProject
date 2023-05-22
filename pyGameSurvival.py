@@ -38,13 +38,35 @@ BLACK = (0, 0, 0)
 class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
-		self.image = pygame.image.load('graphics/player.png').convert_alpha()
+		#self.image = pygame.image.load('graphics/player.png').convert_alpha()
+		self.import_assets()
+		self.status = 'stay'
+		self.frame_index = 0
+
+		# general setup
+		self.image = self.animations[self.status][self.frame_index]
+		self.rect = self.image.get_rect(center = pos)
+		
 		self.image_right = self.image
 		self.image_left = pygame.transform.flip(self.image, True, False)
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
 		self.speed = 10
     
+	def import_assets(self):
+		self.animations = {'stay': [], 'left': [],'right': []}
+
+		for animation in self.animations.keys():
+			full_path = 'graphics/player/' + animation
+			self.animations[animation] = import_folder(full_path)
+	
+	def animate(self,dt):
+		self.frame_index += 3 * dt
+		if self.frame_index >= len(self.animations[self.status]):
+			self.frame_index = 0
+
+		self.image = self.animations[self.status][int(self.frame_index)]
+
 	# 주인공 이동
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -93,7 +115,7 @@ class Player(pygame.sprite.Sprite):
 					self.rect.bottom = obstacle.collision_rect.top  # 아래쪽으로 이동 중이면 충돌한 장애물의 위쪽으로 위치 고정
 				elif self.direction.y < 0:
 					self.rect.top = obstacle.collision_rect.bottom  # 위쪽으로 이동 중이면 충돌한 장애물의 아래쪽으로 위치 고정
-
+	
 
 	def collision(self):
 		pass
@@ -427,5 +449,6 @@ while True:
 	camera_group.update()
 	camera_group.custom_draw(player)
 
+	dt = clock.tick()/1000
 	pygame.display.update()
 	clock.tick(60)
