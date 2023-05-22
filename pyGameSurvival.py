@@ -38,7 +38,8 @@ BLACK = (0, 0, 0)
 class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
-		self.image = pygame.image.load('graphics/player.png').convert_alpha()
+		self.image = pygame.image.load('graphics/stay/0.png').convert_alpha()
+		self. image = pygame.transform.scale(self.image, (128, 128))  #크기 키움
 		self.image_right = self.image
 		self.image_left = pygame.transform.flip(self.image, True, False)
 		self.rect = self.image.get_rect(center = pos)
@@ -106,7 +107,7 @@ class Player(pygame.sprite.Sprite):
 class Tree(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
-		self.image = pygame.image.load('graphics/tree.png').convert_alpha()
+		self.image = pygame.image.load('graphics/desk.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft=pos)
 		self.collision_rect = pygame.Rect(self.rect.left, self.rect.top + self.rect.height // 2, self.rect.width, self.rect.height // 2-10)  # 충돌 박스 크기 수정
 		self.colliding = False # 지금까지 만들어진 tree 객체들과의 충돌 검사를 위한 변수
@@ -185,7 +186,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.camera_rect = pygame.Rect(l,t,w,h)
 
 		# 배경 설정
-		self.ground_surf = pygame.image.load('graphics/ground.png').convert_alpha()
+		self.ground_surf = pygame.image.load('graphics/ground2.png').convert_alpha()
 		self.ground_rect = self.ground_surf.get_rect(topleft = (0,0))
 
 		# 카메라 이동 속도 설정
@@ -332,12 +333,7 @@ def get_normalized_mouse_pos():
     
 def game_start():
 	start_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-	pygame.font.init()
-	start_font = pygame.font.SysFont('Sans', 40, True, True)
-	start_message = 'Press the Space key to start.'
-	start_message_object = start_font.render(start_message, True, (0,0,0))
-	start_message_rect = start_message_object.get_rect()
-	start_message_rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+	start_image = pygame.image.load('graphics/start.png')
 
 	while True:
 		for event in pygame.event.get():
@@ -348,7 +344,8 @@ def game_start():
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 				return
 		start_screen.fill((255,255,255))
-		start_screen.blit(start_message_object, start_message_rect)
+		start_screen.blit(start_image, (0,0))
+
 		pygame.display.update()
 
 

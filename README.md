@@ -49,8 +49,6 @@ Python Survival Game Project
 
 ### Week 3
 
-🟥 장애물 충돌 시 
-
 🟥 플레이어의 생존시간 및 킬 수를 플레이 중인 화면에 띄우기
 
 🟥 생존시간과 킬수를 종합한 점수 기준 정하기
@@ -68,6 +66,10 @@ Python Survival Game Project
   
 
 ### Week 4
+
+🟥 장애물 충돌 시 부드럽게
+
+🟥 적, 총알 좌우 방향
 
 🟥 위치에 따른 맵 변경 구현
 
