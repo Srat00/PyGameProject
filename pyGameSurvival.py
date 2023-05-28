@@ -38,14 +38,28 @@ BLACK = (0, 0, 0)
 class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
-		self.image = pygame.image.load('graphics/stay/0.png').convert_alpha()
-		self. image = pygame.transform.scale(self.image, (128, 128))  #크기 키움
+		
+		self.apply_status(status='stay')
+
+		# self.image = pygame.image.load('graphics/stay/0.png').convert_alpha()
+		# self. image = pygame.transform.scale(self.image, (128, 128))  #크기 키움
+		
 		self.image_right = self.image
 		self.image_left = pygame.transform.flip(self.image, True, False)
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
 		self.speed = 10
     
+	def apply_status(self, status):
+		if status == 'stay':
+			self.sprites = [] #이 부분 if문 밖으로 빼도 되는지 확인
+			self.sprites.append(pygame.image.load('graphics/left/0.png'))
+			self.sprites.append(pygame.image.load('graphics/left/1.png'))
+			self.sprites.append(pygame.image.load('graphics/left/2.png'))
+			self.current_sprite = 0
+			self.image = self.sprites[self.current_sprite]
+			self.image = pygame.transform.scale(self.image, (128, 128))
+
 	# 주인공 이동
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -78,6 +92,13 @@ class Player(pygame.sprite.Sprite):
 
 	def update(self):
 		self.input()
+
+		self.current_sprite += 0.7
+		if int(self.current_sprite) >= len(self.sprites):
+			self.current_sprite = 0
+		self.image = self.sprites[int(self.current_sprite)]
+		self. image = pygame.transform.scale(self.image, (128, 128))
+
 		if self.direction != pygame.Vector2(0,0): # 방향이 정해져 있을 때만 이동
 			new_rect = self.rect.move(self.direction * self.speed)
 			if not any(obstacle.collision_rect.colliderect(new_rect) for obstacle in obstacles):
@@ -372,6 +393,9 @@ bullet_group = pygame.sprite.Group() # 총알 그룹 생성
 obstacles = pygame.sprite.Group()#tree를 넣을 스프라이트 그룹 생성
 
 player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함 
+
+moving_sprites = pygame.sprite.Group()
+moving_sprites.add(player)
 
 for i in range(ObstacleCount): # 장애물 객체 생성
 	random_x = randint(0,GROUND_WIDTH)
