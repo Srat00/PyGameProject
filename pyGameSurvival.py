@@ -19,6 +19,7 @@ import pygame, sys
 from random import randint
 from tkinter import *
 from tkinter import messagebox
+import time
 #====================================================================================================
 #상수 정의
 #====================================================================================================
@@ -45,9 +46,7 @@ class Player(pygame.sprite.Sprite):
 		self.image_left = pygame.transform.flip(self.image, True, False)
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
-		self.speed = 5
-
-
+		self.speed = 10
 		self.health=100
 
 	def take_damage(self, damage):
@@ -61,6 +60,7 @@ class Player(pygame.sprite.Sprite):
 			self.health = 100
 
 	# 주인공 이동
+
 	def input(self):
 		keys = pygame.key.get_pressed()
 		direction = pygame.Vector2(0,0)
@@ -90,32 +90,35 @@ class Player(pygame.sprite.Sprite):
 		else:
 			self.direction.x = 0
 
-
 	def update(self):
 		self.input()
 		if self.direction != pygame.Vector2(0,0): # 방향이 정해져 있을 때만 이동
-			new_rect = self.rect.move(self.direction *self.speed)
-			if not any(obstacle.collision_rect.colliderect(new_rect) for obstacle in obstacles):
-				self.rect = new_rect
+			new_rect = self.rect.move(self.direction * self.speed)
+			
+			self.rect = new_rect
 
 		# 모든 장애물과 충돌 검사 (각 장애물의 충돌 영역인 collision_rect와 플레이어의 충돌 영역인 rect를 이용)
 		for obstacle in obstacles:
 			if self.rect.colliderect(obstacle.collision_rect):
 				if self.direction.x > 0:
-					self.rect.right = obstacle.collision_rect.left  # 오른쪽으로 이동 중이면 충돌한 장애물의 왼쪽으로 위치 고정
-				elif self.direction.x < 0:
-					self.rect.left = obstacle.collision_rect.right  # 왼쪽으로 이동 중이면 충돌한 장애물의 오른쪽으로 위치 고정
-				elif self.direction.y > 0:
-					self.rect.bottom = obstacle.collision_rect.top  # 아래쪽으로 이동 중이면 충돌한 장애물의 위쪽으로 위치 고정
-				elif self.direction.y < 0:
-					self.rect.top = obstacle.collision_rect.bottom  # 위쪽으로 이동 중이면 충돌한 장애물의 아래쪽으로 위치 고정
+					if self.rect.right<=obstacle.collision_rect.left+player.speed:
+						self.rect.right = obstacle.collision_rect.left  # 오른쪽으로 이동 중이면 충돌한 장애물의 왼쪽으로 위치 고정
+				if self.direction.x < 0:
+					if self.rect.left >= obstacle.collision_rect.right-player.speed:
+						self.rect.left = obstacle.collision_rect.right  # 왼쪽으로 이동 중이면 충돌한 장애물의 오른쪽으로 위치 고정
+				if self.direction.y > 0:
+					if self.rect.bottom <= obstacle.collision_rect.top+player.speed:
+						self.rect.bottom = obstacle.collision_rect.top  # 아래쪽으로 이동 중이면 충돌한 장애물의 위쪽으로 위치 고정
+				if self.direction.y < 0:
+					if self.rect.top >= obstacle.collision_rect.bottom-player.speed:
+						self.rect.top = obstacle.collision_rect.bottom  # 위쪽으로 이동 중이면 충돌한 장애물의 아래쪽으로 위치 고정
+
 
 	def collision(self):
 		pass
 	
 	def fire(self):
 		bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
-		
 
 def draw_health_bar():
 	bar_width = 100  # 체력바의 너비
@@ -123,7 +126,6 @@ def draw_health_bar():
 	bar_x=20
 	bar_y=20
 	pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, player.health, bar_height))
-
 
 # 장애물 객체
 class Tree(pygame.sprite.Sprite):
@@ -165,12 +167,64 @@ class Enemy(pygame.sprite.Sprite):
 		self.rect.center = (x + self.image.get_width() // 2, y + self.image.get_height() // 2)
 
 	def collision(self):
+		# 충돌시 랜덤 좌표로 이동.
+		self.x = randint(1000,2000)
+		self.y = randint(1000,2000)
+		# 충돌 기준 보정.
+		self.set_rect_center(self.x, self.y)
+
+	def collision(self):
 		player.take_damage(10)
 		# 충돌시 랜덤 좌표로 이동.
 		self.x = randint(1000,2000)
 		self.y = randint(1000,2000)
 		# 충돌 기준 보정.
 		self.set_rect_center(self.x, self.y)
+
+# 적2 객체
+class Enemy2(pygame.sprite.Sprite):
+	def __init__(self, pos, group):
+		super().__init__(group)
+		self.image1 = pygame.image.load('graphics/enemy2_1.png').convert_alpha()
+		self.image2 = pygame.image.load('graphics/enemy2_2.png').convert_alpha()
+		self.image = self.image1
+		self.rect = self.image.get_rect(topleft = pos)
+		self.direction = pygame.math.Vector2()
+		# 이동속도 3
+		self.speed = 3
+		#적 체력 추가
+		self.hp = 1
+
+	def update(self):
+		self.direction = pygame.math.Vector2(player.rect.center) - pygame.math.Vector2(self.rect.center)
+		if self.direction.length() < 1000 and self.direction.length() > 15: #500에서 1000으로 더 멀리서도 캐릭터를 향해 찾아오게 함
+			self.direction.scale_to_length(self.speed)
+		else:
+			self.direction.scale_to_length(0)
+		self.rect.center += self.direction
+
+	# 충돌 기준 중심 보정
+	def set_rect_center(self, x, y):
+		# 랜덤 좌표 이동시 충돌 기준이 따라가지 않으므로, 충돌 기준을 보정해줌.
+		self.rect.center = (x + self.image.get_width() // 2, y + self.image.get_height() // 2)
+    
+	# 적 체력 감소 추가
+	def collision(self):
+		if(self.hp > 0):
+			self.hp =- 1
+			self.speed = 7
+			self.image = self.image2
+		else:
+			# 적 초기화
+			self.image = self.image1
+			self.speed = 3
+			self.hp = 1
+			# 충돌시 랜덤 좌표로 이동.
+			self.x = randint(1000,2000)
+			self.y = randint(1000,2000)
+			# 충돌 기준 보정.
+			self.set_rect_center(self.x, self.y)
+
 
 
 # 총알 객체
@@ -254,8 +308,6 @@ class CameraGroup(pygame.sprite.Group):
 		if keys[pygame.K_l]: self.camera_rect.x += self.keyboard_speed
 		if keys[pygame.K_i]: self.camera_rect.y -= self.keyboard_speed
 		if keys[pygame.K_j]: self.camera_rect.y += self.keyboard_speed
-
-
 
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
@@ -375,6 +427,11 @@ def game_start():
 
 game_start()
 
+start_time = time.time() # 시작시간 확인
+time_limit=30*60 # 제한시간 30분
+elapsed_time=0
+time_font = pygame.font.SysFont("malgungothic", 36)
+
 pygame.init()
 screen = pygame.display.set_mode((1280,720)) # 화면 설정
 clock = pygame.time.Clock()
@@ -386,12 +443,16 @@ EnemyCount = 5 # 적 개수
 EnemyList = [] # 적 리스트
 BulletSpeed = 25 # 총알 속도
 
+# 적2 추가
+Enemy2Count = 5 # 적2 개수
+Enemy2List = [] # 적2 리스트
+
 # 객체 생성 및 설정
 camera_group = CameraGroup() # 카메라 객체 생성
 bullet_group = pygame.sprite.Group() # 총알 그룹 생성
 obstacles = pygame.sprite.Group()#tree를 넣을 스프라이트 그룹 생성
 
-player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함
+player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함 
 
 for i in range(ObstacleCount): # 장애물 객체 생성
 	random_x = randint(0,GROUND_WIDTH)
@@ -403,8 +464,13 @@ for i in range(EnemyCount): # 적 객체 생성
 	random_x = randint(1000,2000)
 	random_y = randint(1000,2000)
 	EnemyList.append(Enemy((random_x,random_y),camera_group)) # 적 객체 생성, 카메라 그룹에 속함
-done=False
-while not done:
+
+for i in range(Enemy2Count): # 적2 객체 생성
+	random_x = randint(1000,2000)
+	random_y = randint(1000,2000)
+	Enemy2List.append(Enemy2((random_x,random_y),camera_group)) # 적2 객체 생성, 카메라 그룹에 속함
+
+while elapsed_time < time_limit:
 	for event in pygame.event.get():
 		# 종료 조건
 		if event.type == pygame.QUIT: 
@@ -424,35 +490,74 @@ while not done:
 		else:
 			player.image = player.image_left
 
-	# 적군 처리
-		for i in range(EnemyCount):
-			#플레이어와 충돌 처리
-			if EnemyList[i].rect.colliderect(player.rect):
-				EnemyList[i].collision()
-			#총알과 충돌 처리
-			if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
-				EnemyList[i].collision()
-
 			# 마우스 왼쪽 버튼으로 총알 발사
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			if event.button == 1:
 				player.fire()
-		if player.health<=0:
+	
+	#충돌 처리를 for문 밖으로 내보냄
+	#충돌처리 원활하게 하기 위함 
+	# 적군 처리
+	for i in range(EnemyCount):
+		#플레이어와 충돌 처리
+		if EnemyList[i].rect.colliderect(player.rect):
+			EnemyList[i].collision()
+		#총알과 충돌 처리
+		if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
+			EnemyList[i].collision()
+
+	# 적2 처리 추가
+		for i in range(Enemy2Count):
+			#총알과 충돌 처리
+			if pygame.sprite.spritecollide(Enemy2List[i], bullet_group, True):
+				Enemy2List[i].collision()
+			#플레이어와 충돌 처리
+			if Enemy2List[i].rect.colliderect(player.rect):
+				Enemy2List[i].collision()
+
+	if player.health<=0:
 			# 알림창 띄우기. tkinter를 사용함.
+			if time_score >=1200 and time_score <1800:
+				real_score='F'
+			elif time_score >=1500 and time_score <1200:
+				real_score='E'
+			elif time_score >=1200 and time_score <1500:
+				real_score='D'
+			elif time_score >=900 and time_score <1200:
+				real_score='C'
+			elif time_score >= 300 and time_score <900:
+				real_score='B'
+			elif time_score < 0 and time_score<300:
+				real_score='A'
+			elif time_score<=0:
+				real_scroe='A++'
 			Tk().wm_withdraw()
-			messagebox.showinfo("PyGameTest", "GAME OVER! ")
-			done = True
+			messagebox.showinfo("PyGameTest", f"당신의 점수는 {real_score} 입니다~ ")
+			pygame.quit()
+			sys.exit()
 
-
+		
 	# 객체 업데이트
-
 	screen.fill('#71ddee')
 	camera_group.update()
 	camera_group.custom_draw(player)
 	player.update()
 	draw_health_bar() # 체력 표시
 
+	# 플레이 시간 표시
+	current_time = time.time()
+	elapsed_time = current_time - start_time
+	
+	remaining_time = max(time_limit - elapsed_time, 0)
+	minutes = int(remaining_time // 60)
+	seconds = int(remaining_time % 60)
 	
 
+	time_score = minutes * 60 + seconds # 점수 로직 ( 우선 남은 초 만큼 점수를 지정 )
+
+	time_text = time_font.render(f"남은 시간: {minutes:02d}:{seconds:02d}", True, (0, 0, 255))
+
+	screen.blit(time_text, (1000, 10))
+
 	pygame.display.update()
-	clock.tick(180)
+	clock.tick(60)
