@@ -44,7 +44,7 @@ class Player(pygame.sprite.Sprite):
 
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
 		self.apply_status('right') #플레이어가 보고 있는 방향(마우스 방향). 초기화만 오른쪽으로
-
+		self.image = pygame.image.load('graphics/stay_right/0.png').convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
 		self.speed = 10
 		self.current_sprite = 0
@@ -66,7 +66,7 @@ class Player(pygame.sprite.Sprite):
 		if self.health > 100:
 			self.health = 100
       
-  def apply_status(self, status):
+	def apply_status(self, status):
 		self.sprites = []
 		if status == 'right': #오른쪽을 보면서
 			if self.direction[0] == 0: #움직임이 있으면
@@ -487,6 +487,7 @@ def game_start():
 #====================================================================================================
 # 구동부
 #====================================================================================================
+pygame.init()
 
 game_start()
 start_time = time.time() # 시작시간 확인
@@ -494,7 +495,6 @@ time_limit=30*60 # 제한시간 30분
 elapsed_time=0
 time_font = pygame.font.SysFont("malgungothic", 36)
 
-pygame.init()
 screen = pygame.display.set_mode((1280,720)) # 화면 설정
 clock = pygame.time.Clock()
 pygame.event.set_grab(False) # 마우스 포커스 설정 (True : 마우스 커서가 화면 밖으로 나가지 못하게 함)
@@ -536,6 +536,7 @@ for i in range(Enemy2Count): # 적2 객체 생성
 	Enemy2List.append(Enemy2((random_x,random_y),camera_group)) # 적2 객체 생성, 카메라 그룹에 속함
 
 
+
 while elapsed_time < time_limit:
   while True:
     for event in pygame.event.get():
@@ -553,9 +554,9 @@ while elapsed_time < time_limit:
       #	camera_group.zoom_scale += event.y * 0.03
 
       if get_normalized_mouse_pos().x > 0:
-        player.image = player.image_right
+        player.image = player.apply_status('right')
       else:
-        player.image = player.image_left
+        player.image = player.apply_status('left')
         
     # 적군 처리
       for i in range(EnemyCount):
