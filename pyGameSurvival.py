@@ -192,7 +192,7 @@ class Tree(pygame.sprite.Sprite):
 		self.colliding = False # 지금까지 만들어진 tree 객체들과의 충돌 검사를 위한 변수
 
 		while pygame.sprite.spritecollide(self,obstacles,False):
-				self.rect.topleft = (randint(1000, 2000), randint(1000, 2000))
+				self.rect.topleft = (randint(200, GROUND_WIDTH - 200), randint(200, GROUND_HEIGHT - 200))
 				self.collision_rect.topleft = (self.rect.left, self.rect.top + self.rect.height // 2)
 
 	def update(self):
@@ -520,8 +520,8 @@ moving_sprites = pygame.sprite.Group()
 moving_sprites.add(player)
 
 for i in range(ObstacleCount): # 장애물 객체 생성
-	random_x = randint(0,GROUND_WIDTH)
-	random_y = randint(0,GROUND_HEIGHT)
+	random_x = randint(200,GROUND_WIDTH - 200)
+	random_y = randint(200,GROUND_HEIGHT - 200)
 	tree=Tree((random_x,random_y),camera_group) # 장애물 객체 생성, 카메라 그룹에 속함
 	obstacles.add(tree) # 생성된 Tree 객체를 obstale 스프라이트 그룹에 추가한다.
 
