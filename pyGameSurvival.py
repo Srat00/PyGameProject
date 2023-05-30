@@ -17,6 +17,7 @@
 #====================================================================================================
 import pygame, sys
 from random import randint
+import time
 #====================================================================================================
 #상수 정의
 #====================================================================================================
@@ -44,9 +45,14 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
 		self.speed = 10
-    
-	# 주인공 이동
+	
+		#주인공 쿨타임을 위한 변수
+		self.cool = 0
 
+		#주인공 성장구현을 위한 스코어 변수
+		self.score = 0
+	
+	# 주인공 이동
 	def input(self):
 		keys = pygame.key.get_pressed()
 		direction = pygame.Vector2(0,0)
@@ -99,9 +105,22 @@ class Player(pygame.sprite.Sprite):
 	def collision(self):
 		pass
 	
+
+	#성장 구현을 위한 발사 속도 추가
 	def fire(self):
-		bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
+		if(player.score < 3):
+			if(player.cool > 30):
+				player.cool = 0
+				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
+		elif(3 <= player.score < 5):
+			if(player.cool > 20):
+				player.cool = 0
+				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
 		
+		elif(5 <= player.score):
+			if(player.cool > 10):
+				player.cool = 0
+				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
 
 # 장애물 객체
 class Tree(pygame.sprite.Sprite):
@@ -176,23 +195,24 @@ class Enemy2(pygame.sprite.Sprite):
 		# 랜덤 좌표 이동시 충돌 기준이 따라가지 않으므로, 충돌 기준을 보정해줌.
 		self.rect.center = (x + self.image.get_width() // 2, y + self.image.get_height() // 2)
     
-	# 적 체력 감소 추가
+	# 적2 체력 감소 추가
 	def collision(self):
-		if(self.hp > 0):
-			self.hp =- 1
-			self.speed = 7
-			self.image = self.image2
-		else:
-			# 적 초기화
-			self.image = self.image1
-			self.speed = 3
-			self.hp = 1
-			# 충돌시 랜덤 좌표로 이동.
-			self.x = randint(1000,2000)
-			self.y = randint(1000,2000)
-			# 충돌 기준 보정.
-			self.set_rect_center(self.x, self.y)
+		# 충돌시 랜덤 좌표로 이동.
+		self.x = randint(1000,2000)
+		self.y = randint(1000,2000)
+		# 충돌 기준 보정.
+		self.set_rect_center(self.x, self.y)
 
+	# 적2 분노 모드 추가
+	def angry(self):
+		self.hp = 0
+		self.speed = 7
+		self.image = self.image2
+
+	def release(self):
+		self.hp = 1
+		self.speed = 3
+		self.image = self.image1
 
 
 # 총알 객체
@@ -468,15 +488,27 @@ while True:
 		#총알과 충돌 처리
 		if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
 			EnemyList[i].collision()
+			#성장 구현을 위한 스코어 추가
+			player.score += 1
 
 	# 적2 처리 추가
-		for i in range(Enemy2Count):
-			#총알과 충돌 처리
-			if pygame.sprite.spritecollide(Enemy2List[i], bullet_group, True):
+	for i in range(Enemy2Count):
+		#총알과 충돌 처리
+		if pygame.sprite.spritecollide(Enemy2List[i], bullet_group, True):
+			if (Enemy2List[i].hp == 1):
+				Enemy2List[i].angry()
+			else:
+				Enemy2List[i].release()
 				Enemy2List[i].collision()
-			#플레이어와 충돌 처리
-			if Enemy2List[i].rect.colliderect(player.rect):
-				Enemy2List[i].collision()
+				#성장 구현을 위한 스코어 추가
+				player.score += 1
+
+		#플레이어와 충돌 처리
+		if Enemy2List[i].rect.colliderect(player.rect):
+			Enemy2List[i].collision()
+
+	#쿨타임 구현
+	player.cool += 1
 
 	# 객체 업데이트
 	screen.fill('#71ddee')
