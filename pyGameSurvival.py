@@ -413,8 +413,8 @@ moving_sprites = pygame.sprite.Group()
 moving_sprites.add(player)
 
 for i in range(ObstacleCount): # 장애물 객체 생성
-	random_x = randint(200,GROUND_WIDTH-400)
-	random_y = randint(200,GROUND_HEIGHT-200)
+	random_x = randint(0,GROUND_WIDTH)
+	random_y = randint(0,GROUND_HEIGHT)
 	tree=Tree((random_x,random_y),camera_group) # 장애물 객체 생성, 카메라 그룹에 속함
 	obstacles.add(tree) # 생성된 Tree 객체를 obstale 스프라이트 그룹에 추가한다.
 
