@@ -39,80 +39,38 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
 
-		# self.image = pygame.image.load('graphics/stay_right/0.png').convert_alpha() #시작만 단일이미지로 임시 초기화
-		self.apply_status('right') #플레이어가 보고 있는 방향(마우스 방향). 초기화만 오른쪽으로
-		
-		# self. image = pygame.transform.scale(self.image, (128, 128))  #크기수정
-		
-		# self.image_right = self.image
-		# self.image_left = pygame.transform.flip(self.image, True, False)
-		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
+		self.apply_status('right') #플레이어가 보고 있는 방향(마우스 방향). 초기화만 오른쪽으로
+
+		self.rect = self.image.get_rect(center = pos)
 		self.speed = 10
     
 	def apply_status(self, status):
 		self.sprites = []
 		if status == 'right': #오른쪽을 보면서
-			# if self.direction == 0: #움직임이 있으면
+			if self.direction[0] == 0: #움직임이 있으면
 				self.sprites.append(pygame.image.load('graphics/stay_right/0.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_right/1.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_right/2.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_right/3.png'))
-				# self.sprites.append(pygame.image.load('graphics/move_right/0.png'))
-				# self.sprites.append(pygame.image.load('graphics/move_right/1.png'))
-				# self.sprites.append(pygame.image.load('graphics/move_right/2.png'))
-				# self.sprites.append(pygame.image.load('graphics/move_right/3.png'))
-			# else: #움직임이 없으면
-				# self.sprites.append(pygame.image.load('graphics/move_right/0.png'))
-				# self.sprites.append(pygame.image.load('graphics/move_right/1.png'))
-				# self.sprites.append(pygame.image.load('graphics/move_right/2.png'))
-				# self.sprites.append(pygame.image.load('graphics/move_right/3.png'))
-<<<<<<< Updated upstream
-=======
+	
+			else: #움직임이 없으면
+				self.sprites.append(pygame.image.load('graphics/move_right/0.png'))
+				self.sprites.append(pygame.image.load('graphics/move_right/1.png'))
+				self.sprites.append(pygame.image.load('graphics/move_right/2.png'))
+				self.sprites.append(pygame.image.load('graphics/move_right/3.png'))
 
 		elif status == 'left': #왼쪽 보면서
-			# if self.direction == 0: #움직임이 없으면
+			if self.direction[0] == 0: #움직임이 없으면
 				self.sprites.append(pygame.image.load('graphics/stay_left/0.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_left/1.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_left/2.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_left/3.png'))
-			# else: #움직임이 있으면
-			# 	self.sprites.append(pygame.image.load('graphics/move_left/0.png'))
-			# 	self.sprites.append(pygame.image.load('graphics/move_left/1.png'))
-			# 	self.sprites.append(pygame.image.load('graphics/move_left/2.png'))
-			# 	self.sprites.append(pygame.image.load('graphics/move_left/3.png'))
-
-			
-
-		# elif status == 'left':
-		# 	#self.sprites = [] #이 부분 if문 밖으로 빼도 되는지 확인
-		# 	self.sprites.append(pygame.image.load('graphics/left/0.png'))
-		# 	self.sprites.append(pygame.image.load('graphics/left/1.png'))
-
-		self.current_sprite = 0
-		self.image = self.sprites[self.current_sprite]
-
-	# 주인공 이동
->>>>>>> Stashed changes
-
-		elif status == 'left': #왼쪽 보면서
-			# if self.direction == 0: #움직임이 없으면
-				self.sprites.append(pygame.image.load('graphics/stay_left/0.png'))
-				self.sprites.append(pygame.image.load('graphics/stay_left/1.png'))
-				self.sprites.append(pygame.image.load('graphics/stay_left/2.png'))
-				self.sprites.append(pygame.image.load('graphics/stay_left/3.png'))
-			# else: #움직임이 있으면
-			# 	self.sprites.append(pygame.image.load('graphics/move_left/0.png'))
-			# 	self.sprites.append(pygame.image.load('graphics/move_left/1.png'))
-			# 	self.sprites.append(pygame.image.load('graphics/move_left/2.png'))
-			# 	self.sprites.append(pygame.image.load('graphics/move_left/3.png'))
-
-			
-
-		# elif status == 'left':
-		# 	#self.sprites = [] #이 부분 if문 밖으로 빼도 되는지 확인
-		# 	self.sprites.append(pygame.image.load('graphics/left/0.png'))
-		# 	self.sprites.append(pygame.image.load('graphics/left/1.png'))
+			else: #움직임이 있으면
+				self.sprites.append(pygame.image.load('graphics/move_left/0.png'))
+				self.sprites.append(pygame.image.load('graphics/move_left/1.png'))
+				self.sprites.append(pygame.image.load('graphics/move_left/2.png'))
+				self.sprites.append(pygame.image.load('graphics/move_left/3.png'))
 
 		self.current_sprite = 0
 		self.image = self.sprites[self.current_sprite]
@@ -122,12 +80,12 @@ class Player(pygame.sprite.Sprite):
 		keys = pygame.key.get_pressed()
 		# self.direction = pygame.Vector2(0,0)
 		if keys[pygame.K_UP] or keys[pygame.K_w]:
-			if self.rect.center[1] < 0:	 #y좌표가 0보다 작으면(위로 나가려고 하면)y의 방향값을 0으로 바꿔
+			if self.rect.center[1]-192 < 0:	 #y좌표가 0보다 작으면(위로 나가려고 하면)y의 방향값을 0으로 바꿔
 				self.direction.y = 0		#update함수의 self.rect.center += self.direction * self.speed 계산에서 y값이 0이 된다.
 			else:
 				self.direction.y = -1 		#그렇지 않을 때는 전의 코드와 같음
 		elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
-			if self.rect.center[1] > GROUND_HEIGHT:
+			if self.rect.center[1]+32 > GROUND_HEIGHT:
 				self.direction.y = 0
 			else:
 				self.direction.y = 1
@@ -135,12 +93,12 @@ class Player(pygame.sprite.Sprite):
 			self.direction.y = 0
 
 		if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-			if self.rect.center[0] > GROUND_WIDTH:
+			if self.rect.center[0]+90 > GROUND_WIDTH:
 				self.direction.x = 0
 			else:
 				self.direction.x = 1
 		elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
-			if self.rect.center[0] < 0:
+			if self.rect.center[0]-90 < 0:
 				self.direction.x = 0
 			else:
 				self.direction.x = -1
@@ -455,8 +413,8 @@ moving_sprites = pygame.sprite.Group()
 moving_sprites.add(player)
 
 for i in range(ObstacleCount): # 장애물 객체 생성
-	random_x = randint(0,GROUND_WIDTH)
-	random_y = randint(0,GROUND_HEIGHT)
+	random_x = randint(200,GROUND_WIDTH-400)
+	random_y = randint(200,GROUND_HEIGHT-200)
 	tree=Tree((random_x,random_y),camera_group) # 장애물 객체 생성, 카메라 그룹에 속함
 	obstacles.add(tree) # 생성된 Tree 객체를 obstale 스프라이트 그룹에 추가한다.
 
@@ -483,12 +441,9 @@ while True:
   
 		if get_normalized_mouse_pos().x > 0:
 			player.apply_status('right')
-			#player.image = player.image_right
 		else:
-			#player.image = player.image_left
 			player.apply_status('left')
 
-<<<<<<< Updated upstream
 
 	# 적군 처리
 		for i in range(EnemyCount):
@@ -498,8 +453,6 @@ while True:
 			#총알과 충돌 처리
 			if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
 				EnemyList[i].collision()
-=======
->>>>>>> Stashed changes
 
 			# 마우스 왼쪽 버튼으로 총알 발사
 		if event.type == pygame.MOUSEBUTTONDOWN:
@@ -507,18 +460,6 @@ while True:
 				player.fire()
 		
 
-<<<<<<< Updated upstream
-=======
-
-	# 적2 처리 추가
-		for i in range(Enemy2Count):
-			#총알과 충돌 처리
-			if pygame.sprite.spritecollide(Enemy2List[i], bullet_group, True):
-				Enemy2List[i].collision()
-			#플레이어와 충돌 처리
-			if Enemy2List[i].rect.colliderect(player.rect):
-				Enemy2List[i].collision()
->>>>>>> Stashed changes
 
 	# 객체 업데이트
 	screen.fill('#000000')
