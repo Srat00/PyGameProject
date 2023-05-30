@@ -41,9 +41,9 @@ BLACK = (0, 0, 0)
 class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
-
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
-		self.apply_status('right') #플레이어가 보고 있는 방향(마우스 방향). 초기화만 오른쪽으로
+		self.status = 'right'
+		self.apply_status()
 		self.image = pygame.image.load('graphics/stay_right/0.png').convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
 		self.speed = 10
@@ -66,10 +66,10 @@ class Player(pygame.sprite.Sprite):
 		if self.health > 100:
 			self.health = 100
       
-	def apply_status(self, status):
+	def apply_status(self):
 		self.sprites = []
-		if status == 'right': #오른쪽을 보면서
-			if self.direction[0] == 0: #움직임이 있으면
+		if self.status == 'right': #오른쪽을 보면서
+			if abs(self.direction[0]) + abs(self.direction[1]) == 0: #움직임이 없으면
 				self.sprites.append(pygame.image.load('graphics/stay_right/0.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_right/1.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_right/2.png'))
@@ -81,8 +81,8 @@ class Player(pygame.sprite.Sprite):
 				self.sprites.append(pygame.image.load('graphics/move_right/2.png'))
 				self.sprites.append(pygame.image.load('graphics/move_right/3.png'))
 
-		elif status == 'left': #왼쪽 보면서
-			if self.direction[0] == 0: #움직임이 없으면
+		elif self.status == 'left': #왼쪽 보면서
+			if abs(self.direction[0]) + abs(self.direction[1]) == 0: #움직임이 없으면
 				self.sprites.append(pygame.image.load('graphics/stay_left/0.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_left/1.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_left/2.png'))
@@ -116,7 +116,7 @@ class Player(pygame.sprite.Sprite):
 			else:
 				self.direction.x = 1
 		elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
-			if self.rect.center[0]-90 < 0:
+			if self.rect.center[0] - 90 < 0:
 				self.direction.x = 0
 			else:
 				self.direction.x = -1
@@ -125,8 +125,7 @@ class Player(pygame.sprite.Sprite):
 
 	def update(self):
 		self.input()
-		
-		# self.apply_status()
+		self.apply_status()
 		self.current_sprite += 0.3
 		if int(self.current_sprite) >= len(self.sprites):
 			self.current_sprite = 0
@@ -554,9 +553,9 @@ while elapsed_time < time_limit:
       #	camera_group.zoom_scale += event.y * 0.03
 
       if get_normalized_mouse_pos().x > 0:
-        player.image = player.apply_status('right')
+        player.image = player.status = 'right'
       else:
-        player.image = player.apply_status('left')
+        player.image = player.status = 'left'
         
     # 적군 처리
       for i in range(EnemyCount):
