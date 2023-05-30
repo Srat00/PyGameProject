@@ -47,7 +47,10 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
 		self.speed = 5
-
+		#주인공 쿨타임을 위한 변수
+		self.cool = 0
+		#주인공 성장구현을 위한 스코어 변수
+		self.score = 0
 		self.health=100
 
 	def take_damage(self, damage):
@@ -59,12 +62,6 @@ class Player(pygame.sprite.Sprite):
 		self.health += amount
 		if self.health > 100:
 			self.health = 100
-
-		#주인공 쿨타임을 위한 변수
-		self.cool = 0
-
-		#주인공 성장구현을 위한 스코어 변수
-		self.score = 0
 	
 	# 주인공 이동
 	def input(self):
