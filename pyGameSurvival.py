@@ -67,6 +67,33 @@ class Player(pygame.sprite.Sprite):
 				# self.sprites.append(pygame.image.load('graphics/move_right/1.png'))
 				# self.sprites.append(pygame.image.load('graphics/move_right/2.png'))
 				# self.sprites.append(pygame.image.load('graphics/move_right/3.png'))
+<<<<<<< Updated upstream
+=======
+
+		elif status == 'left': #왼쪽 보면서
+			# if self.direction == 0: #움직임이 없으면
+				self.sprites.append(pygame.image.load('graphics/stay_left/0.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_left/1.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_left/2.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_left/3.png'))
+			# else: #움직임이 있으면
+			# 	self.sprites.append(pygame.image.load('graphics/move_left/0.png'))
+			# 	self.sprites.append(pygame.image.load('graphics/move_left/1.png'))
+			# 	self.sprites.append(pygame.image.load('graphics/move_left/2.png'))
+			# 	self.sprites.append(pygame.image.load('graphics/move_left/3.png'))
+
+			
+
+		# elif status == 'left':
+		# 	#self.sprites = [] #이 부분 if문 밖으로 빼도 되는지 확인
+		# 	self.sprites.append(pygame.image.load('graphics/left/0.png'))
+		# 	self.sprites.append(pygame.image.load('graphics/left/1.png'))
+
+		self.current_sprite = 0
+		self.image = self.sprites[self.current_sprite]
+
+	# 주인공 이동
+>>>>>>> Stashed changes
 
 		elif status == 'left': #왼쪽 보면서
 			# if self.direction == 0: #움직임이 없으면
@@ -461,6 +488,7 @@ while True:
 			#player.image = player.image_left
 			player.apply_status('left')
 
+<<<<<<< Updated upstream
 
 	# 적군 처리
 		for i in range(EnemyCount):
@@ -470,6 +498,8 @@ while True:
 			#총알과 충돌 처리
 			if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
 				EnemyList[i].collision()
+=======
+>>>>>>> Stashed changes
 
 			# 마우스 왼쪽 버튼으로 총알 발사
 		if event.type == pygame.MOUSEBUTTONDOWN:
@@ -477,6 +507,18 @@ while True:
 				player.fire()
 		
 
+<<<<<<< Updated upstream
+=======
+
+	# 적2 처리 추가
+		for i in range(Enemy2Count):
+			#총알과 충돌 처리
+			if pygame.sprite.spritecollide(Enemy2List[i], bullet_group, True):
+				Enemy2List[i].collision()
+			#플레이어와 충돌 처리
+			if Enemy2List[i].rect.colliderect(player.rect):
+				Enemy2List[i].collision()
+>>>>>>> Stashed changes
 
 	# 객체 업데이트
 	screen.fill('#000000')
