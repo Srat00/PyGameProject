@@ -28,8 +28,8 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 ROOM_WIDTH = 1024*3
 ROOM_HEIGHT = 1024*3
-GROUND_WIDTH = 3648
-GROUND_HEIGHT= 3200
+GROUND_WIDTH = 1824
+GROUND_HEIGHT= 1600
 
 BLACK = (0, 0, 0)
 
@@ -41,11 +41,14 @@ BLACK = (0, 0, 0)
 class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
-		self.image = pygame.image.load('graphics/player.png').convert_alpha()
-		self.image_right = self.image
-		self.image_left = pygame.transform.flip(self.image, True, False)
-		self.rect = self.image.get_rect(center = pos)
+
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
+		self.apply_status('right') #플레이어가 보고 있는 방향(마우스 방향). 초기화만 오른쪽으로
+
+		self.rect = self.image.get_rect(center = pos)
+		self.speed = 10
+		self.current_sprite = 0
+		self.image = self.sprites[self.current_sprite]
 		self.speed = 5
 		#주인공 쿨타임을 위한 변수
 		self.cool = 0
@@ -62,18 +65,45 @@ class Player(pygame.sprite.Sprite):
 		self.health += amount
 		if self.health > 100:
 			self.health = 100
+      
+  def apply_status(self, status):
+		self.sprites = []
+		if status == 'right': #오른쪽을 보면서
+			if self.direction[0] == 0: #움직임이 있으면
+				self.sprites.append(pygame.image.load('graphics/stay_right/0.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_right/1.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_right/2.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_right/3.png'))
+	
+			else: #움직임이 없으면
+				self.sprites.append(pygame.image.load('graphics/move_right/0.png'))
+				self.sprites.append(pygame.image.load('graphics/move_right/1.png'))
+				self.sprites.append(pygame.image.load('graphics/move_right/2.png'))
+				self.sprites.append(pygame.image.load('graphics/move_right/3.png'))
+
+		elif status == 'left': #왼쪽 보면서
+			if self.direction[0] == 0: #움직임이 없으면
+				self.sprites.append(pygame.image.load('graphics/stay_left/0.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_left/1.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_left/2.png'))
+				self.sprites.append(pygame.image.load('graphics/stay_left/3.png'))
+			else: #움직임이 있으면
+				self.sprites.append(pygame.image.load('graphics/move_left/0.png'))
+				self.sprites.append(pygame.image.load('graphics/move_left/1.png'))
+				self.sprites.append(pygame.image.load('graphics/move_left/2.png'))
+				self.sprites.append(pygame.image.load('graphics/move_left/3.png'))
 	
 	# 주인공 이동
 	def input(self):
 		keys = pygame.key.get_pressed()
-		direction = pygame.Vector2(0,0)
+		# self.direction = pygame.Vector2(0,0)
 		if keys[pygame.K_UP] or keys[pygame.K_w]:
-			if self.rect.center[1] < 0:	 #y좌표가 0보다 작으면(위로 나가려고 하면)y의 방향값을 0으로 바꿔
+			if self.rect.center[1]-192 < 0:	 #y좌표가 0보다 작으면(위로 나가려고 하면)y의 방향값을 0으로 바꿔
 				self.direction.y = 0		#update함수의 self.rect.center += self.direction * self.speed 계산에서 y값이 0이 된다.
 			else:
 				self.direction.y = -1 		#그렇지 않을 때는 전의 코드와 같음
 		elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
-			if self.rect.center[1] > GROUND_HEIGHT:
+			if self.rect.center[1]+32 > GROUND_HEIGHT:
 				self.direction.y = 0
 			else:
 				self.direction.y = 1
@@ -81,12 +111,12 @@ class Player(pygame.sprite.Sprite):
 			self.direction.y = 0
 
 		if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-			if self.rect.center[0] > GROUND_WIDTH:
+			if self.rect.center[0]+90 > GROUND_WIDTH:
 				self.direction.x = 0
 			else:
 				self.direction.x = 1
 		elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
-			if self.rect.center[0] < 0:
+			if self.rect.center[0]-90 < 0:
 				self.direction.x = 0
 			else:
 				self.direction.x = -1
@@ -95,6 +125,13 @@ class Player(pygame.sprite.Sprite):
 
 	def update(self):
 		self.input()
+		
+		# self.apply_status()
+		self.current_sprite += 0.3
+		if int(self.current_sprite) >= len(self.sprites):
+			self.current_sprite = 0
+		self.image = self.sprites[int(self.current_sprite)]
+
 		if self.direction != pygame.Vector2(0,0): # 방향이 정해져 있을 때만 이동
 			new_rect = self.rect.move(self.direction *self.speed)
 			
@@ -149,7 +186,7 @@ def draw_health_bar():
 class Tree(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
-		self.image = pygame.image.load('graphics/tree.png').convert_alpha()
+		self.image = pygame.image.load('graphics/box.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft=pos)
 		self.collision_rect = pygame.Rect(self.rect.left, self.rect.top + self.rect.height // 2, self.rect.width, self.rect.height // 2-10)  # 충돌 박스 크기 수정
 		self.colliding = False # 지금까지 만들어진 tree 객체들과의 충돌 검사를 위한 변수
@@ -157,7 +194,6 @@ class Tree(pygame.sprite.Sprite):
 		while pygame.sprite.spritecollide(self,obstacles,False):
 				self.rect.topleft = (randint(1000, 2000), randint(1000, 2000))
 				self.collision_rect.topleft = (self.rect.left, self.rect.top + self.rect.height // 2)
-
 
 	def update(self):
 		pass
@@ -303,22 +339,32 @@ class CameraGroup(pygame.sprite.Group):
 	# 객체가 카메라의 중앙에만 있도록 함.
 	def center_target_camera(self,target):
 		self.offset.x = target.rect.centerx - self.half_w
+		if self.offset.x < 0 - 40: #player의 크기 64 고려
+			self.offset.x = 0 - 40 #더 이상 안움직이게(조건과 똑같은 값) #!!!!플레이어 속도의 영향을 받음!!!!
+		if self.offset.x > GROUND_WIDTH - SCREEN_WIDTH + 40:
+			self.offset.x = GROUND_WIDTH - SCREEN_WIDTH + 40
+
 		self.offset.y = target.rect.centery - self.half_h
+		if self.offset.y < 0 - 40:
+			self.offset.y = 0 - 40
+		if self.offset.y > GROUND_HEIGHT - SCREEN_HEIGHT + 40:
+			self.offset.y = GROUND_HEIGHT - SCREEN_HEIGHT + 40
+		
 
 	# 객체가 카메라 경계 안에 있도록 함. (추천)
-	def box_target_camera(self,target):
+	# def box_target_camera(self,target):
 
-		if target.rect.left < self.camera_rect.left:
-			self.camera_rect.left = target.rect.left
-		if target.rect.right > self.camera_rect.right:
-			self.camera_rect.right = target.rect.right
-		if target.rect.top < self.camera_rect.top:
-			self.camera_rect.top = target.rect.top
-		if target.rect.bottom > self.camera_rect.bottom:
-			self.camera_rect.bottom = target.rect.bottom
+	# 	if target.rect.left < self.camera_rect.left:
+	# 		self.camera_rect.left = target.rect.left
+	# 	if target.rect.right > self.camera_rect.right:
+	# 		self.camera_rect.right = target.rect.right
+	# 	if target.rect.top < self.camera_rect.top:
+	# 		self.camera_rect.top = target.rect.top
+	# 	if target.rect.bottom > self.camera_rect.bottom:
+	# 		self.camera_rect.bottom = target.rect.bottom
 
-		self.offset.x = self.camera_rect.left - self.camera_borders['left']
-		self.offset.y = self.camera_rect.top - self.camera_borders['top']
+	# 	self.offset.x = self.camera_rect.left - self.camera_borders['left']
+	# 	self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	
 	# 키보드 입력으로 카메라를 이동함.
 	def keyboard_control(self):
@@ -394,7 +440,7 @@ class CameraGroup(pygame.sprite.Group):
 		#self.mouse_control()
 		#self.zoom_keyboard_control()
 
-		self.internal_surf.fill('#71ddee') # 기본 배경 색상 설정
+		self.internal_surf.fill('#000000') # 기본 배경 색상 설정
 
 		# 배경 그리기
 		ground_offset = self.ground_rect.topleft - self.offset + self.internal_offset # 배경의 위치를 카메라에 맞게 설정
@@ -422,12 +468,7 @@ def get_normalized_mouse_pos():
     
 def game_start():
 	start_screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-	pygame.font.init()
-	start_font = pygame.font.SysFont('Sans', 40, True, True)
-	start_message = 'Press the Space key to start.'
-	start_message_object = start_font.render(start_message, True, (0,0,0))
-	start_message_rect = start_message_object.get_rect()
-	start_message_rect.center = (SCREEN_WIDTH/2, SCREEN_HEIGHT/2)
+	start_image = pygame.image.load('graphics/start.png')
 
 	while True:
 		for event in pygame.event.get():
@@ -438,7 +479,8 @@ def game_start():
 			if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
 				return
 		start_screen.fill((255,255,255))
-		start_screen.blit(start_message_object, start_message_rect)
+		start_screen.blit(start_image, (0,0))
+
 		pygame.display.update()
 
 
@@ -458,7 +500,7 @@ clock = pygame.time.Clock()
 pygame.event.set_grab(False) # 마우스 포커스 설정 (True : 마우스 커서가 화면 밖으로 나가지 못하게 함)
 
 # 환경변수 설정
-ObstacleCount = 50 # 장애물 개수
+ObstacleCount = 20 # 장애물 개수
 EnemyCount = 5 # 적 개수
 EnemyList = [] # 적 리스트
 BulletSpeed = 25 # 총알 속도
@@ -474,6 +516,9 @@ obstacles = pygame.sprite.Group()#tree를 넣을 스프라이트 그룹 생성
 
 player = Player((640,360),camera_group) # 주인공 객체 생성, 카메라 그룹에 속함 
 
+moving_sprites = pygame.sprite.Group()
+moving_sprites.add(player)
+
 for i in range(ObstacleCount): # 장애물 객체 생성
 	random_x = randint(0,GROUND_WIDTH)
 	random_y = randint(0,GROUND_HEIGHT)
@@ -485,7 +530,6 @@ for i in range(EnemyCount): # 적 객체 생성
 	random_y = randint(1000,2000)
 	EnemyList.append(Enemy((random_x,random_y),camera_group)) # 적 객체 생성, 카메라 그룹에 속함
 done=False
-
 for i in range(Enemy2Count): # 적2 객체 생성
 	random_x = randint(1000,2000)
 	random_y = randint(1000,2000)
