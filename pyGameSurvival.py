@@ -198,6 +198,39 @@ class Tree(pygame.sprite.Sprite):
 	def update(self):
 		pass
 
+particle_images = []
+for i in range(8):
+    image = pygame.image.load(f"graphics/level_up/particle{i}.png")  # 이미지 파일 경로에 맞게 수정해주세요
+    particle_images.append(image)
+
+# 파티클 클래스
+class Particle(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.images = particle_images  # 이미지 시퀀스
+        self.index = 0  # 현재 이미지 인덱스
+        self.image = self.images[self.index]
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.duration = 60  # 파티클이 화면에 보여지는 시간
+        self.timer = 0
+
+    def update(self):
+        self.timer += 1
+        if self.timer >= self.duration:
+            self.kill()
+        else:
+            # 이미지 시퀀스 애니메이션
+            image_index = int(self.timer / (self.duration / len(self.images)))
+            self.index = min(image_index, len(self.images) - 1)
+            self.image = self.images[self.index]
+
+particle_system = pygame.sprite.Group()
+
+def create_particles(x, y):
+    for _ in range(10):  # 파티클 개수 조정 가능
+        particle = Particle(x, y)
+        particle_system.add(particle)
 # 적 객체
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
@@ -550,9 +583,11 @@ while elapsed_time < time_limit:
         pygame.quit()
         sys.exit()
       if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_ESCAPE:
-          pygame.quit()
-          sys.exit()
+        if event.key == pygame.K_SPACE:
+          create_particles(player.rect.centerx,player.rect.centery-60)
+
+
+
 
       # 마우스 휠로 줌 조작
       #if event.type == pygame.MOUSEWHEEL:
@@ -638,7 +673,8 @@ while elapsed_time < time_limit:
     camera_group.custom_draw(player)
     player.update()
     draw_health_bar() # 체력 표시
-
+    particle_system.update()
+    particle_system.draw(screen)
     # 플레이 시간 표시
     current_time = time.time()
     elapsed_time = current_time - start_time
