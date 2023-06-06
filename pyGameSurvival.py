@@ -126,7 +126,7 @@ class Player(pygame.sprite.Sprite):
 	def update(self):
 		self.input()
 		self.apply_status()
-		self.current_sprite += 0.3
+		self.current_sprite += 0.1
 		if int(self.current_sprite) >= len(self.sprites):
 			self.current_sprite = 0
 		self.image = self.sprites[int(self.current_sprite)]
@@ -163,16 +163,17 @@ class Player(pygame.sprite.Sprite):
 			if(player.cool > 30):
 				player.cool = 0
 				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
+				attack_sound.play()
 		elif(3 <= player.score < 5):
 			if(player.cool > 20):
 				player.cool = 0
 				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
-		
+				attack_sound.play()
 		elif(5 <= player.score):
 			if(player.cool > 10):
 				player.cool = 0
 				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
-
+				attack_sound.play()
 def draw_health_bar():
 	bar_width = 100  # 체력바의 너비
 	bar_height = 20  # 체력바의 높이
@@ -493,6 +494,11 @@ start_time = time.time() # 시작시간 확인
 time_limit=30*60 # 제한시간 30분
 elapsed_time=0
 time_font = pygame.font.SysFont("malgungothic", 36)
+attack_sound = pygame.mixer.Sound('sound/attack_sound.wav')
+attack_sound.set_volume(0.3)
+bgm = pygame.mixer.Sound('sound/temp_BGM.mp3')
+bgm.set_volume(0.3)
+bgm.play(-1)
 
 screen = pygame.display.set_mode((1280,720)) # 화면 설정
 clock = pygame.time.Clock()
