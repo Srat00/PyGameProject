@@ -338,16 +338,16 @@ class CameraGroup(pygame.sprite.Group):
 	# 객체가 카메라의 중앙에만 있도록 함.
 	def center_target_camera(self,target):
 		self.offset.x = target.rect.centerx - self.half_w
-		if self.offset.x < 0 - 40: #player의 크기 64 고려
-			self.offset.x = 0 - 40 #더 이상 안움직이게(조건과 똑같은 값) #!!!!플레이어 속도의 영향을 받음!!!!
-		if self.offset.x > GROUND_WIDTH - SCREEN_WIDTH + 40:
-			self.offset.x = GROUND_WIDTH - SCREEN_WIDTH + 40
+		if self.offset.x < 0 - 600: #player의 크기 64 고려
+			self.offset.x = 0 - 600 #더 이상 안움직이게(조건과 똑같은 값) #!!!!플레이어 속도의 영향을 받음!!!!
+		if self.offset.x > GROUND_WIDTH - SCREEN_WIDTH + 680:
+			self.offset.x = GROUND_WIDTH - SCREEN_WIDTH + 680
 
 		self.offset.y = target.rect.centery - self.half_h
-		if self.offset.y < 0 - 40:
-			self.offset.y = 0 - 40
-		if self.offset.y > GROUND_HEIGHT - SCREEN_HEIGHT + 40:
-			self.offset.y = GROUND_HEIGHT - SCREEN_HEIGHT + 40
+		if self.offset.y < 0 - 320:
+			self.offset.y = 0 - 320
+		if self.offset.y > GROUND_HEIGHT - SCREEN_HEIGHT + 400:
+			self.offset.y = GROUND_HEIGHT - SCREEN_HEIGHT + 400
 		
 
 	# 객체가 카메라 경계 안에 있도록 함. (추천)
