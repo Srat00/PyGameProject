@@ -41,9 +41,9 @@ BLACK = (0, 0, 0)
 class Player(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group) # super()는 부모 클래스의 생성자를 호출한다.
+
 		self.direction = pygame.math.Vector2() # (x, y) 형식의 벡터
-		self.status = 'right'
-		self.apply_status()
+		self.apply_status('right') #플레이어가 보고 있는 방향(마우스 방향). 초기화만 오른쪽으로
 		self.image = pygame.image.load('graphics/stay_right/0.png').convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
 		self.speed = 10
@@ -54,7 +54,7 @@ class Player(pygame.sprite.Sprite):
 		self.cool = 0
 		#주인공 성장구현을 위한 스코어 변수
 		self.score = 0
-		self.health=100
+		self.health=200
 
 	def take_damage(self, damage):
 		self.health -= damage
@@ -66,10 +66,10 @@ class Player(pygame.sprite.Sprite):
 		if self.health > 100:
 			self.health = 100
       
-	def apply_status(self):
+	def apply_status(self, status):
 		self.sprites = []
-		if self.status == 'right': #오른쪽을 보면서
-			if abs(self.direction[0]) + abs(self.direction[1]) == 0: #움직임이 없으면
+		if status == 'right': #오른쪽을 보면서
+			if self.direction[0] == 0: #움직임이 있으면
 				self.sprites.append(pygame.image.load('graphics/stay_right/0.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_right/1.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_right/2.png'))
@@ -81,8 +81,8 @@ class Player(pygame.sprite.Sprite):
 				self.sprites.append(pygame.image.load('graphics/move_right/2.png'))
 				self.sprites.append(pygame.image.load('graphics/move_right/3.png'))
 
-		elif self.status == 'left': #왼쪽 보면서
-			if abs(self.direction[0]) + abs(self.direction[1]) == 0: #움직임이 없으면
+		elif status == 'left': #왼쪽 보면서
+			if self.direction[0] == 0: #움직임이 없으면
 				self.sprites.append(pygame.image.load('graphics/stay_left/0.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_left/1.png'))
 				self.sprites.append(pygame.image.load('graphics/stay_left/2.png'))
@@ -116,7 +116,7 @@ class Player(pygame.sprite.Sprite):
 			else:
 				self.direction.x = 1
 		elif keys[pygame.K_LEFT] or keys[pygame.K_a]:
-			if self.rect.center[0] - 90 < 0:
+			if self.rect.center[0]-90 < 0:
 				self.direction.x = 0
 			else:
 				self.direction.x = -1
@@ -125,8 +125,9 @@ class Player(pygame.sprite.Sprite):
 
 	def update(self):
 		self.input()
-		self.apply_status()
-		self.current_sprite += 0.1
+		
+		# self.apply_status()
+		self.current_sprite += 0.3
 		if int(self.current_sprite) >= len(self.sprites):
 			self.current_sprite = 0
 		self.image = self.sprites[int(self.current_sprite)]
@@ -163,40 +164,15 @@ class Player(pygame.sprite.Sprite):
 			if(player.cool > 30):
 				player.cool = 0
 				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
-				attack_sound.play()
 		elif(3 <= player.score < 5):
 			if(player.cool > 20):
 				player.cool = 0
 				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
-				attack_sound.play()
+		
 		elif(5 <= player.score):
 			if(player.cool > 10):
 				player.cool = 0
 				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
-				attack_sound.play()
-def draw_health_bar():
-	bar_width = 100  # 체력바의 너비
-	bar_height = 20  # 체력바의 높이
-	bar_x=20
-	bar_y=20
-	pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, player.health, bar_height))
-
-
-# 장애물 객체
-class Tree(pygame.sprite.Sprite):
-	def __init__(self, pos, group):
-		super().__init__(group)
-		self.image = pygame.image.load('graphics/box.png').convert_alpha()
-		self.rect = self.image.get_rect(topleft=pos)
-		self.collision_rect = pygame.Rect(self.rect.left, self.rect.top + self.rect.height // 2, self.rect.width, self.rect.height // 2-10)  # 충돌 박스 크기 수정
-		self.colliding = False # 지금까지 만들어진 tree 객체들과의 충돌 검사를 위한 변수
-
-		while pygame.sprite.spritecollide(self,obstacles,False):
-				self.rect.topleft = (randint(200, GROUND_WIDTH - 200), randint(200, GROUND_HEIGHT - 200))
-				self.collision_rect.topleft = (self.rect.left, self.rect.top + self.rect.height // 2)
-
-	def update(self):
-		pass
 
 particle_images = []
 for i in range(8):
@@ -231,6 +207,42 @@ def create_particles(x, y):
     for _ in range(10):  # 파티클 개수 조정 가능
         particle = Particle(x, y)
         particle_system.add(particle)
+
+
+def draw_health_bar():
+	bar_width = 100  # 체력바의 너비
+	bar_height = 20  # 체력바의 높이
+	bar_x=20
+	bar_y=20
+	pygame.draw.rect(screen, (255, 0, 0), (bar_x, bar_y, player.health, bar_height))
+
+
+
+def draw_time_background():
+	color=(187,50,250)
+
+	pygame.draw.rect(screen, (0,255,255), (496,0, 276, 80), 5)
+	rect_surface = pygame.Surface((276, 80))
+	rect_surface.set_alpha(128)
+	rect_surface.fill(color)
+	screen.blit(rect_surface, (496,0))
+
+# 장애물 객체
+class Tree(pygame.sprite.Sprite):
+	def __init__(self, pos, group):
+		super().__init__(group)
+		self.image = pygame.image.load('graphics/box.png').convert_alpha()
+		self.rect = self.image.get_rect(topleft=pos)
+		self.collision_rect = pygame.Rect(self.rect.left, self.rect.top + self.rect.height // 2, self.rect.width, self.rect.height // 2-10)  # 충돌 박스 크기 수정
+		self.colliding = False # 지금까지 만들어진 tree 객체들과의 충돌 검사를 위한 변수
+
+		while pygame.sprite.spritecollide(self,obstacles,False):
+				self.rect.topleft = (randint(200, GROUND_WIDTH - 200), randint(200, GROUND_HEIGHT - 200))
+				self.collision_rect.topleft = (self.rect.left, self.rect.top + self.rect.height // 2)
+
+	def update(self):
+		pass
+
 # 적 객체
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
@@ -297,6 +309,14 @@ class Enemy2(pygame.sprite.Sprite):
     
 	# 적2 체력 감소 추가
 	def collision(self):
+		# 충돌시 랜덤 좌표로 이동.
+		player.take_damage(10)
+		self.x = randint(1000,2000)
+		self.y = randint(1000,2000)
+		# 충돌 기준 보정.
+		self.set_rect_center(self.x, self.y)
+
+	def collision_bullet(self):
 		# 충돌시 랜덤 좌표로 이동.
 		self.x = randint(1000,2000)
 		self.y = randint(1000,2000)
@@ -527,11 +547,6 @@ start_time = time.time() # 시작시간 확인
 time_limit=30*60 # 제한시간 30분
 elapsed_time=0
 time_font = pygame.font.SysFont("malgungothic", 36)
-attack_sound = pygame.mixer.Sound('sound/attack_sound.wav')
-attack_sound.set_volume(0.3)
-bgm = pygame.mixer.Sound('sound/temp_BGM.mp3')
-bgm.set_volume(0.3)
-bgm.play(-1)
 
 screen = pygame.display.set_mode((1280,720)) # 화면 설정
 clock = pygame.time.Clock()
@@ -579,24 +594,21 @@ while elapsed_time < time_limit:
   while True:
     for event in pygame.event.get():
       # 종료 조건
-      if event.type == pygame.QUIT: 
+      if event.type == pygame.QUIT:
         pygame.quit()
         sys.exit()
       if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_SPACE:
           create_particles(player.rect.centerx,player.rect.centery-60)
 
-
-
-
       # 마우스 휠로 줌 조작
       #if event.type == pygame.MOUSEWHEEL:
       #	camera_group.zoom_scale += event.y * 0.03
 
       if get_normalized_mouse_pos().x > 0:
-        player.image = player.status = 'right'
+        player.image = player.apply_status('right')
       else:
-        player.image = player.status = 'left'
+        player.image = player.apply_status('left')
         
     # 적군 처리
       for i in range(EnemyCount):
@@ -642,7 +654,7 @@ while elapsed_time < time_limit:
         EnemyList[i].collision()
       #총알과 충돌 처리
       if pygame.sprite.spritecollide(EnemyList[i], bullet_group, True):
-        EnemyList[i].collision()
+        EnemyList[i].collision_bullet()
         #성장 구현을 위한 스코어 추가
         player.score += 1
 
@@ -654,7 +666,7 @@ while elapsed_time < time_limit:
           Enemy2List[i].angry()
         else:
           Enemy2List[i].release()
-          Enemy2List[i].collision()
+          Enemy2List[i].collision_bullet()
           #성장 구현을 위한 스코어 추가
           player.score += 1
 
@@ -673,6 +685,7 @@ while elapsed_time < time_limit:
     camera_group.custom_draw(player)
     player.update()
     draw_health_bar() # 체력 표시
+    draw_time_background()
     particle_system.update()
     particle_system.draw(screen)
     # 플레이 시간 표시
@@ -686,9 +699,9 @@ while elapsed_time < time_limit:
 
     time_score = minutes * 60 + seconds # 점수 로직 ( 우선 남은 초 만큼 점수를 지정 )
 
-    time_text = time_font.render(f"남은 시간: {minutes:02d}:{seconds:02d}", True, (0, 0, 255))
+    time_text = time_font.render(f"남은 시간: {minutes:02d}:{seconds:02d}", True, (14, 244, 246))
 
-    screen.blit(time_text, (1000, 10))
+    screen.blit(time_text, (500, 10))
 
     pygame.display.update()
     clock.tick(60)
