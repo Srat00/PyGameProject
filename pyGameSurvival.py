@@ -1,15 +1,4 @@
-# Version: 1.1.0
-# Log:
-# 2023-04-28: Ver 1.0.0
-# - Created [어록희]
-# 2023-05-03: ver 1.0.1
-# - Added Obstacle [강희수]
-# 2023-05-08: ver 1.0.1_1
-# - Added Bullet [어록희] 
-# 2023-05-08: ver 1.1.0
-# - Code Refactored
-# - Added Camera
-# - Reinforced Obstacle
+# Version: 2.1.0
 # ================================================
 
 #====================================================================================================
@@ -183,6 +172,12 @@ class Player(pygame.sprite.Sprite):
 				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
 				attack_sound.play()
 
+		elif(50 <= player.score):
+			if(player.cool > 8):
+				player.cool = 0
+				bullet_group.add(Bullet(self.rect.center, BulletSpeed, camera_group))
+				attack_sound.play()
+
 def draw_health_bar():
 	bar_height = 20  # 체력바의 높이
 	bar_x=20
@@ -239,15 +234,15 @@ class Enemy(pygame.sprite.Sprite):
 	def collision(self):
 		player.take_damage(10)
 		# 충돌시 랜덤 좌표로 이동.
-		self.x = randint(1000,2000)
-		self.y = randint(1000,2000)
+		self.x = randint(10,1200)
+		self.y = randint(10,1200)
 		# 충돌 기준 보정.
 		self.set_rect_center(self.x, self.y)
 
 	def collision_bullet(self):
 		# 충돌시 랜덤 좌표로 이동.
-		self.x = randint(1000,2000)
-		self.y = randint(1000,2000)
+		self.x = randint(10,1200)
+		self.y = randint(10,1200)
 		# 충돌 기준 보정.
 		self.set_rect_center(self.x, self.y)
 
@@ -282,15 +277,15 @@ class Enemy2(pygame.sprite.Sprite):
 	def collision(self):
 		# 충돌시 랜덤 좌표로 이동.
 		player.take_damage(10)
-		self.x = randint(1000,2000)
-		self.y = randint(1000,2000)
+		self.x = randint(10,1200)
+		self.y = randint(10,1200)
 		# 충돌 기준 보정.
 		self.set_rect_center(self.x, self.y)
 
 	def collision_bullet(self):
 		# 충돌시 랜덤 좌표로 이동.
-		self.x = randint(1000,2000)
-		self.y = randint(1000,2000)
+		self.x = randint(10,1200)
+		self.y = randint(10,1200)
 		# 충돌 기준 보정.
 		self.set_rect_center(self.x, self.y)
 
@@ -476,13 +471,13 @@ for i in range(ObstacleCount): # 장애물 객체 생성
 	obstacles.add(tree) # 생성된 Tree 객체를 obstale 스프라이트 그룹에 추가한다.
 
 for i in range(EnemyCount): # 적 객체 생성
-	random_x = randint(1000,2000)
-	random_y = randint(1000,2000)
+	random_x = randint(10,1200)
+	random_y = randint(10,1200)
 	EnemyList.append(Enemy((random_x,random_y),camera_group)) # 적 객체 생성, 카메라 그룹에 속함
 done=False
 for i in range(Enemy2Count): # 적2 객체 생성
-	random_x = randint(1000,2000)
-	random_y = randint(1000,2000)
+	random_x = randint(10,1200)
+	random_y = randint(10,1200)
 	Enemy2List.append(Enemy2((random_x,random_y),camera_group)) # 적2 객체 생성, 카메라 그룹에 속함
 
 
@@ -516,16 +511,18 @@ while elapsed_time < time_limit:
 				
 			if player.health<=0:
 				# 알림창 띄우기. tkinter를 사용함.
-				if time_score >= 400 and time_score < 500:
+				if time_score >= 250 and time_score < 300:
 					real_score='F'
-				elif time_score >= 300 and time_score < 400:
+				elif time_score >= 200 and time_score < 250:
 					real_score='D'
-				elif time_score >= 200 and time_score < 300:
+				elif time_score >= 150 and time_score < 200:
 					real_score='C'
-				elif time_score >= 100 and time_score < 200:
+				elif time_score >= 100 and time_score < 150:
 					real_score='B'
-				elif time_score >= 1 and time_score < 100:
+				elif time_score >= 50 and time_score < 100:
 					real_score='A'
+				elif time_score >= 0 and time_score < 50:
+					real_score='A+'
 				elif time_score < 0:
 					real_score='S'
 				Tk().wm_withdraw()
@@ -580,6 +577,7 @@ while elapsed_time < time_limit:
 		remaining_time = max(time_limit - elapsed_time, 0)
 		minutes = int(remaining_time // 60)
 		seconds = int(remaining_time % 60)
+
 		time_score = minutes * 60 + seconds # 점수 로직 ( 우선 남은 초 만큼 점수를 지정 )
 		time_text = time_font.render(f"남은 시간: {minutes:02d}:{seconds:02d}", True, (14, 244, 246))
 		score_text = time_font.render(f"점수: {player.score}", True, (14, 244, 246))
