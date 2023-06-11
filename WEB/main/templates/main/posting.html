@@ -1,18 +1,66 @@
 <html>
     <head>
-        <title>Posting!</title>
-    </head>
+    <title>게시판</title>
+    <!-- include libraries(jQuery, bootstrap) -->
+    <link href="../../../static/css/board.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+            
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>                     
+    
+    <link href="../../../static/css/styles.css" rel="stylesheet" />
+    
+        
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
     <body>
-        <h1>게시글 개별 페이지입니다</h1>
-        <p>제목 : {{post.postname}}</p>
-        <p>내용</p>
-        <p>{{post.contents}}</p>
-        <!-- 이미지 보여주기 -->
-        {% if post.mainphoto %}
-            <img src = "{{ post.mainphoto.url }}" alt="" height="600">
-            <br>
-        {% endif %}
-        <a href="/blog/">목록</a>
-        <a href="/blog/{{post.pk}}/remove">삭제</a>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand">Shooting Game</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="#!">Board</a></li>
+                        <li class="nav-item"><a class="nav-link" href="../credit/">Credit</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <section class="notice">
+            <div id="board-list">
+                <div class="container">
+                    <table class="board-table">
+                        <thead>
+                          <tr>
+                              <th scope="col" style="width: 15%;">제목</th>
+                              <th scope="col" style="width: 65%; text-align: left;">{{post.postname}}</th>
+                              <th scope="col">글쓴이</th>
+                              <th scope="col">{{post.name}}</th>
+                          </tr>
+                        </thead>
+                    </table>
+                    <table class="board-table">
+                      <tr style="height: auto;">
+                          <td scope="col" style="text-align: left; vertical-align: text-top; padding: 5%">{{post.contents}}</td>
+                      </tr>
+                    </table>
+                </div>
+            </div>
+          </br>
+          </br>
+        </section>
+          <div class="text-center">
+            <div class="pt-1">
+                <button class="btn btn btn-success" onclick="location.href='/blog/'" style="width:5%; padding:5px;">목록</button>
+                <button class="btn btn btn-danger" onclick="location.href='/blog/{{post.id}}/remove/'" style="width:5%; padding:5px;">삭제</button>
+            </div>
+          </div>
     </body>
 </html>

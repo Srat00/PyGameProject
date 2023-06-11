@@ -1,21 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    <!-- include libraries(jQuery, bootstrap) -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+            
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>                     
+     
+    <link href="../../../static/css/styles.css" rel="stylesheet" />
+        
     <meta charset="UTF-8">
-    <title>글쓰기 페이지</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글쓰기</title>  
 </head>
 <body>
-    <h1>글쓰기 페이지</h1>
-    <form method="POST">
-        {% csrf_token %}
-        제목<br>
-        <input type="text" name="postname"><br>
-        내용<br>
-        <textarea rows="10" cols="50" name="contents"></textarea><br>
-        <input type="file" name="mainphoto"><br>
-        <input type="submit" value="글쓰기">
-    </form>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand">Shooting Game</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#!">Board</a></li>
+                    <li class="nav-item"><a class="nav-link" href="../credit/">Credit</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="notice">
+        <div class="container">
+            <div class="text-center">
+                <div class="page-title">
+                    </br>
+                    </br>
+                    <h3>새로운 글 작성</h3>
+                    </br>
+                    </br>
+                </div> 
+            </div>
+        </div>
+
+        <main role="main" class="container">
+            <form method="POST">
+                {% csrf_token %}
+                <table style="margin: 0 auto; padding-bottom: 15%; width: 75%;">
+                    <tr>
+                        <td style="padding-right: 3%; width: 15%;">
+                            <div class="pt-1">
+                                닉네임<br>
+                        </td>
+                        <td style="padding-right: 5%;">
+                            <input type="text" name="name" style="border-radius:5px; width:100%; padding:5px;"><br>
+                            </div>
+                        </td>
+                        <td style="padding-right: 3%; width: 17%;">
+                            <div class="pt-1">
+                                비밀번호<br>
+                        </td>
+                        <td>
+                            <input type="password" name="password" style="border-radius:5px; width:100%; padding:5px;"><br>
+                        </td>
+                            </div>   
+                    </tr>
+                </table>
+                <table style="margin: 0 auto; width: 75%;">
+                    <tr>
+                        <td style="padding-top: 3%;">
+                            <div class="pt-1">
+                                제목<br>
+                        </td>
+                        <td style="padding-top: 3%;">
+                                <input type="text" name="postname" placeholder="제목을 입력하세요" style="border-radius:5px; width:100%; padding:5px;">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: text-top; padding-top: 3%;">
+                            <div class="pt-1">
+                                내용<br>
+                        </td>
+                        <td style="padding-top: 3%;">
+                            <textarea rows="20" name="contents" placeholder="내용을 입력하세요" style="width: 100%;"></textarea><br>
+                        </td>
+                        </div>
+                    </tr>
+                </table>
+                    
+                <div class="text-center" style="padding-top: 3%;">
+                    <button class="btn btn btn-success" type="submit" style="width:10%; padding:5px;">제출</button>
+                </div>    
+            </form>
+        </main>
+
+    </section>
 </body>
 </html>
