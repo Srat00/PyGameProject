@@ -92,7 +92,7 @@ Python Survival Game Project
 
 http://srat00.tplinkdns.com:8080
 
-![image](https://github.com/Srat00/PyGameProject/assets/32453804/c2e1d35b-8302-41ba-9856-0c51847be8c1)
+![image](https://github.com/Srat00/PyGameProject/assets/32453804/58bc5f83-ccc4-4b75-b0ef-a9217aa2a700)
 
 
 ====================================
